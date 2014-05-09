@@ -21,7 +21,7 @@ if strcmpi(method, 'freqz')
 
     num =invfreqz(h,w,ndecim,0);
     num = num/sum(num);
-    den = [1 zeros(1,ndecim-1)];
+    den = [1 zeros(1,length(num)-1)];
 
 elseif strcmpi(method, 'decim')
     num = interp1(1:length(cic_coeff), cic_coeff, linspace(1, length(cic_coeff), ndecim+1-rem(ndecim,2)));

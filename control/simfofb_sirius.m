@@ -1,17 +1,23 @@
 function simout = simfofb_sirius
 
+load ../matlab.mat
+
+M = M(:,ceil((end+1)/2):end,3);
+Md = Mdq(:,:,3);
+
+
 % Matrices
-nbpm = 5;
-ncorr = 4;
-ndist = 2;
-param.RespMat = floor(10*rand(nbpm, ncorr));
-param.CorrMat = calcpseudoinv(param.RespMat);
-param.DistMat = floor(10*rand(nbpm, ndist));
+nbpm = size(M,1);
+ncorr = size(M,2);
+ndist = size(Md,2);
+param.RespMat = M;
+param.CorrMat = pinv(param.RespMat);
+param.DistMat = Md;
 
 % BPM (FOFB sensor)
-bpm_cic_decfactor = 1250;
-bpm_cic_nstages = 3;
-bpm_cic_ndelays = 1;
+bpm_cic_decfactor = 1015;
+bpm_cic_nstages = 2;
+bpm_cic_ndelays = 3;
 [param.bpm.num, param.bpm.den] = buildcic(bpm_cic_decfactor, bpm_cic_nstages, bpm_cic_ndelays);
 param.bpm.Ts = 10e-6;
 
@@ -23,7 +29,7 @@ param.dcct.den = 1;
 param.psctrl.num = 1;
 param.psctrl.den = 1;
 param.psctrl.Ts = 10e-6;
-param.psctrl.manual = 0;   % (0 = auto; 1 = manual)
+param.psctrl.manual = true;
 
 % Power supply output filter
 param.psfilter.num = 1;
@@ -32,17 +38,14 @@ param.psfilter.den = 1;
 % Corrector magnet
 corrmagnet_L = 20e-3;
 corrmagnet_R = 1;
-param.corrmagnet.num = 1;
-param.corrmagnet.den = [corrmagnet_L/corrmagnet_R 1];
+[param.corrmagnet.num, param.corrmagnet.den] = build1order(corrmagnet_L/corrmagnet_R);
 
 % Vacuum chamber
 vac_radius = 12e-3;
 vac_thickness = 0.1e-3;
 vac_conductivity = 5.85e7;
 mu0 = 4*pi*1e-7;
-tau = 0.5*mu0*vac_conductivity*vac_radius*vac_thickness;
-param.vacchamb.num = 1;
-param.vacchamb.den = [tau 1];
+[param.vacchamb.num, param.vacchamb.den] = build1order(0.5*mu0*vac_conductivity*vac_radius*vac_thickness);
 
 % FOFB controller
 [a,b,c,d] = tf2ss(0.0001*[1 0], [1 -1]);
