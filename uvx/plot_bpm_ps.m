@@ -1,4 +1,4 @@
-function fofb_fa_plot_bpm_ps(data, selected_bpms, selected_ps, bpm_visualization_offset, ps_visualization_offset)
+function plot_bpm_ps(data, selected_bpms, selected_ps, bpm_visualization_offset, ps_visualization_offset)
 % fofb_fa_plot_bpm_ps(data, selected_bpms, selected_ps, bpm_visualization_offset, ps_visualization_offset)
 
 time = double(data.time-data.time(1))/1e9; % seconds, relative time
