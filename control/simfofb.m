@@ -14,31 +14,12 @@ function simout = simfofb(param)
 %                 .CorrMat: Orbit Correction Matrix (orbit corrector vs. orbit)
 %                 .DistMat: Orbit Disturbances Matrix (orbit vs. source of orbit disturbance)
 %                 .fofbctrl: digital state-space representation of the FOFB controller (MIMO model)
-%                   .a
-%                   .b
-%                   .c
-%                   .d
-%                   .Ts
 %                 .bpm: digital transfer function of the Beam Position Monitor (BPM) - FOFB sensor (SISO model)
-%                   .num
-%                   .den
-%                   .Ts
 %                 .psctrl: digital transfer fucntion of the orbit corrector power supply (SISO model)
-%                   .num
-%                   .den
-%                   .Ts
-%                 .dcct: analog transfer function of the DC Current Transformer - power supply sensor (SISO model)
-%                   .num
-%                   .den
+%                 .pssens: analog transfer function of the DC Current Transformer - power supply sensor (SISO model)
 %                 .psfilter: analog transfer function of the orbit corrector power supply's output filter (SISO model)
-%                   .num
-%                   .den
 %                 .corrmagnet: analog transfer function of the orbit corrector's magnet (SISO model)
-%                   .num
-%                   .den
 %                 .vacchamb: analog transfer function of the vacuum chamber eddy currents effect (SISO model)
-%                   .num
-%                   .den
 %                 .simvectors: simulation vectors
 %                   .t: time vector (n x 1 or 1 x n array)
 %                   .dist: disturbance vectors (n x <number of source of disturbances> matrix)
@@ -57,81 +38,73 @@ function simout = simfofb(param)
 %                   .control_ps: power supply controller's control signal output
 %                   .sensor_ps: power supply controller's sensor signal input
 
-RespMat = param.RespMat;
-CorrMat = param.CorrMat;
-DistMat = param.DistMat;
+repsmat = param.respmat;
+distmat = param.distmat;
 bpm = param.bpm;
-dcct = param.dcct;
-vacchamb = param.vacchamb;
+sofbctrl = param.sofbctrl;
 fofbctrl = param.fofbctrl;
-psctrl = param.psctrl;
-psfilter = param.psfilter;
+
+corrsofbpsfilter = param.corrsofbpsfilter;
 corrmagnet = param.corrmagnet;
+corrmagnetgain = param.corrmagnetgain;
+vacchamb = param.vacchamb;
+netdelay = param.netdelay;
 simvectors = param.simvectors;
 
 % Check if all matrix dimensions are correct
-if size(RespMat, 1) ~= size(CorrMat, 2)
-    error('CorrMat must have the same number of columns as the number of rows of RespMat (number of BPMs).');
-elseif size(RespMat, 2) ~= size(CorrMat, 1)
-    error('CorrMat must have the same number of rows as the number of columns of RespMat (number of orbit correctors).');
-elseif size(RespMat, 1) ~= size(DistMat, 1)
-    error('DistMat must have the same number of rows as the number of rows of RespMat (number of BPMs).');
+if size(repsmat, 1) ~= size(distmat, 1)
+    error('distmat must have the same number of rows as tpsctrl.Ts = psctrl.Ts;he number of rows of respmat (number of beam position readings).');
 end
 
 % Extract number of BPMs, orbit correctors and sources of disturbance
-nbpm = size(RespMat, 1);
-ncorr = size(RespMat, 2);
-ndist = size(DistMat, 2);
+nbpm = size(repsmat, 1);
+ncorr = size(repsmat, 2);
+ncorrfofb = size(fofbctrl.d, 1);
+ncorrsofb = size(sofbctrl.d, 1);
+ndist = size(distmat, 2);
+
+% check ncorr == ncorrfofb+ncorrsofb
 
 % Check if all simulation vector dimensions are correct
-if size(simvectors.dist, 2) ~= ndist
-    error('simvectors.dist must have the same number of columns as the number of columns of DistMat (number of source of disturbances).');
+if size(simvectors.orbit_distortion, 2) ~= ndist
+    error('simvectors.orbit_distortion must have the same number of columns as the number of columns of DistMat (number of source of disturbances).');
 elseif size(simvectors.bpm_noise, 2) ~= nbpm
     error('simvectors.bpm_noise must have the same number of columns as the number of rows of RespMat (number of BPMs).');
-elseif size(simvectors.dcct_noise, 2) ~= ncorr
-    error('simvectors.dcct_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
-elseif size(simvectors.psoutput_noise, 2) ~= ncorr
-    error('simvectors.psoutput_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
-elseif size(simvectors.dist, 1) ~= length(simvectors.t)
-    error('simvectors.dist must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
+elseif size(simvectors.sloworbcorr_current_noise, 2) ~= ncorrsofb
+    error('simvectors.sloworbcorr_current_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
+elseif size(simvectors.sloworbcorr_power_noise, 2) ~= ncorrsofb
+    error('simvectors.sloworbcorr_power_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
+elseif size(simvectors.orbit_distortion, 1) ~= length(simvectors.t)
+    error('simvectors.orbit_distortion must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
 elseif size(simvectors.bpm_noise, 1) ~= length(simvectors.t)
     error('simvectors.bpm_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
-elseif size(simvectors.dcct_noise, 1) ~= length(simvectors.t)
-    error('simvectors.dcct_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
-elseif size(simvectors.psoutput_noise, 1) ~= length(simvectors.t)
-    error('simvectors.psoutput_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
+elseif size(simvectors.sloworbcorr_current_noise, 1) ~= length(simvectors.t)
+    error('simvectors.sloworbcorr_current_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
+elseif size(simvectors.sloworbcorr_power_noise, 1) ~= length(simvectors.t)
+    error('simvectors.sloworbcorr_power_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
 end
 
 % Beam dynamics MIMO model
 beam.a = [];
 beam.b = [];
 beam.c = [];
-beam.d = RespMat;
+beam.d = repsmat;
 
 % Beam disturbance MIMO model
 distbeam.a = [];
 distbeam.b = [];
 distbeam.c = [];
-distbeam.d = DistMat;
+distbeam.d = distmat;
 
-% BPM  MIMO model (FOFB sensors)
+% BPM MIMO model
 [a,b,c,d] = tf2ss(bpm.num, bpm.den);
 [bpm.a, bpm.b, bpm.c, bpm.d] = repss(a,b,c,d,nbpm);
 
-% DCCT MIMO model (Power supplies sensors)
-[a,b,c,d] = tf2ss(dcct.num, dcct.den);
-[dcct.a, dcct.b, dcct.c, dcct.d] = repss(a,b,c,d,ncorr);
+% Slow corrector power supply output filter MIMO model
+[a,b,c,d] = tf2ss(corrsofbpsfilter.num, corrsofbpsfilter.den);
+[corrsofbpsfilter.a, corrsofbpsfilter.b, corrsofbpsfilter.c, corrsofbpsfilter.d] = repss(a,b,c,d,ncorrsofb);
 
-% Power supply controller MIMO model
-[a,b,c,d] = tf2ss(psctrl.num, psctrl.den);
-[psctrl.a, psctrl.b, psctrl.c, psctrl.d] = repss(a,b,c,d,ncorr);
-psctrl.Ts = psctrl.Ts;
-
-% Power supply output filter MIMO model
-[a,b,c,d] = tf2ss(psfilter.num, psfilter.den);
-[psfilter.a, psfilter.b, psfilter.c, psfilter.d] = repss(a,b,c,d,ncorr);
-
-% Corrector magnet MIMO model
+% Corrector magnets MIMO model
 [a,b,c,d] = tf2ss(corrmagnet.num, corrmagnet.den);
 [corrmagnet.a, corrmagnet.b, corrmagnet.c, corrmagnet.d] = repss(a,b,c,d,ncorr);
 
@@ -139,29 +112,66 @@ psctrl.Ts = psctrl.Ts;
 [a,b,c,d] = tf2ss(vacchamb.num, vacchamb.den);
 [vacchamb.a, vacchamb.b, vacchamb.c, vacchamb.d] = repss(a,b,c,d,ncorr);
 
-% Assign simulation parameters to workspace so that Simulink can use it
-simparam = struct(...
-    'beam', beam, ...
-    'distbeam', distbeam, ...
-    'fofbctrl', fofbctrl, ...
-    'bpm', bpm, ...
-    'dcct', dcct, ...
-    'psctrl', psctrl, ...
-    'psfilter', psfilter, ...
-    'corrmagnet', corrmagnet, ...
-    'vacchamb', vacchamb, ...
-    'simvectors', simvectors);
+% Communication network delays
+netdelay.bpm = repmat(netdelay.bpm, 1, nbpm);
+netdelay.corrfofb = repmat(netdelay.corrfofb, 1, ncorrfofb);
+netdelay.corrsofb = repmat(netdelay.corrsofb, 1, ncorrsofb);
 
-assignin('base', 'simparam', simparam);
+% Quantization
+% quantization.bpm = repmat(quantization.bpm, 1, nbpm);
+% quantization.corrfofb = repmat(quantization.corrfofb, 1, ncorrfofb);
+% quantization.corrsofb = repmat(quantization.corrsofb, 1, ncorrsofb);
+%assignin('base', 'quantization', quantization);
+
+modelname = 'ofb';
+open_system(modelname,'loadonly');
+if true
+    set_param([modelname '/Slow Orbit Correctors'' Power Supplies'], 'ModelFile', 'corrsofb_ps_voltage.mdl');
+elseif strcmpi(sofb_pstype, 'x')
+    pssens = param.psdcct;
+    psctrl = param.psctrl;
+
+    % Slow corrector power supply sensors MIMO model
+    [a,b,c,d] = tf2ss(pssens.num, pssens.den);
+    [pssens.a, pssens.b, pssens.c, pssens.d] = repss(a,b,c,d,ncorr);
+    
+    % Slow corrector power supply controller MIMO model
+    [a,b,c,d] = tf2ss(psctrl.num, psctrl.den);
+    [psctrl.a, psctrl.b, psctrl.c, psctrl.d] = repss(a,b,c,d,ncorr);
+    
+    assignin('base', 'pssens', pssens);
+    assignin('base', 'psctrl', psctrl);
+elseif strcmpi(sofb_pstype, 'y')
+end
+save_system(modelname);
+close_system(modelname);
+
+% Assign simulation parameters to workspace so that Simulink can use it
+assignin('base', 'beam', beam);
+assignin('base', 'distbeam', distbeam);
+assignin('base', 'sofbctrl', sofbctrl);
+assignin('base', 'fofbctrl', fofbctrl);
+assignin('base', 'bpm', bpm);
+assignin('base', 'corrsofbpsfilter', corrsofbpsfilter);
+assignin('base', 'corrmagnetgain', corrmagnetgain);
+assignin('base', 'corrmagnet', corrmagnet);
+assignin('base', 'vacchamb', vacchamb);
+assignin('base', 'netdelay', netdelay);
+assignin('base', 'ncorr', ncorr);
+assignin('base', 'ncorrsofb', ncorrsofb);
+assignin('base', 'ncorrfofb', ncorrfofb);
+assignin('base', 'simvectors', simvectors);
+assignin('base', 'corrselectsofb', param.corrselectsofb);
+assignin('base', 'corrordering', param.corrordering);
 
 % Run Simulink simulation
-simout_simulink = sim('fofb', 'StopTime', num2str(simvectors.t(end)));
+simout_simulink = sim(modelname, 'StopTime', num2str(simvectors.t(end)));
 
 % Extract simulation results
-simout.t = get(simout_simulink, 'tout');
-yout = get(simout_simulink, 'yout');
-simout.beam = yout(:,1:nbpm);
-simout.control_fofb = yout(:,nbpm+(1:ncorr));
-simout.control_ps = yout(:,ncorr+nbpm+(1:ncorr));
-simout.sensor_fofb = yout(:,2*ncorr+nbpm+(1:nbpm));
-simout.sensor_ps = yout(:,2*ncorr+2*nbpm+(1:ncorr));
+r = get(simout_simulink, 'yout');
+simout.t = r.time;
+simout.beam_orbit = r.signals(1).values;
+simout.control_sofb = r.signals(2).values;
+simout.control_fofb = r.signals(3).values;
+simout.corr_voltages = r.signals(4).values;
+simout.corr_currents = r.signals(5).values;
