@@ -1,6 +1,8 @@
 # Matlab
 *.asv
+*.m~
 
 # Simulink
+*.mdl.autosave
 *.mexa64
 slprj/
