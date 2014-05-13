@@ -3,7 +3,7 @@ Model {
   Version		  7.8
   MdlSubVersion		  0
   GraphicalInterface {
-    NumRootInports	    5
+    NumRootInports	    7
     Inport {
       BusObject		      ""
       Name		      "reference_orbit"
@@ -14,15 +14,23 @@ Model {
     }
     Inport {
       BusObject		      ""
+      Name		      "sofb_setpoints"
+    }
+    Inport {
+      BusObject		      ""
+      Name		      "fofb_setpoints"
+    }
+    Inport {
+      BusObject		      ""
       Name		      "bpm_noise"
     }
     Inport {
       BusObject		      ""
-      Name		      "sloworbcorr_current_noise"
+      Name		      "corrsofb_current_noise"
     }
     Inport {
       BusObject		      ""
-      Name		      "sloworbcorr_power_noise"
+      Name		      "corrsofb_power_noise"
     }
     NumRootOutports	    5
     Outport {
@@ -51,7 +59,7 @@ Model {
       Name		      "corr_currents"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.168"
+    ComputedModelVersion    "1.170"
     NumModelReferences	    2
     ModelReference {
       ModelRefBlockPath	      "ofb/Controllers|ofbctrl"
@@ -78,9 +86,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 13 10:24:09 2014"
-  RTWModifiedTimeStamp	  321877449
-  ModelVersionFormat	  "1.%<AutoIncrement:168>"
+  LastModifiedDate	  "Tue May 13 19:27:27 2014"
+  RTWModifiedTimeStamp	  321909714
+  ModelVersionFormat	  "1.%<AutoIncrement:170>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -217,8 +225,8 @@ Model {
 	  $ObjectID		  4
 	  Version		  "1.11.1"
 	  Decimation		  "1"
-	  ExternalInput		  "[simvectors.t simvectors.reference_orbit simvectors.orbit_distortion simvectors.bpm_noise simvect"
-	  "ors.sloworbcorr_current_noise simvectors.sloworbcorr_power_noise]"
+	  ExternalInput		  "[simvectors.t simvectors.reference_orbit simvectors.orbit_distortion simvectors.sofb_setpoints si"
+	  "mvectors.fofb_setpoints simvectors.bpm_noise simvectors.corrsofb_current_noise simvectors.corrsofb_power_noise]"
 	  FinalStateName	  "xFinal"
 	  InitialState		  "xInitial"
 	  LimitDataPoints	  off
@@ -661,7 +669,7 @@ Model {
       }
       Name		      "Configuration"
       CurrentDlgPage	      "Data Import//Export"
-      ConfigPrmDlgPosition     [ 332, 145, 1348, 989 ] 
+      ConfigPrmDlgPosition     [ 322, 135, 1358, 1027 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -820,7 +828,7 @@ Model {
   }
   System {
     Name		    "ofb"
-    Location		    [126, 581, 1678, 1050]
+    Location		    [78, 255, 1630, 724]
     Open		    off
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -834,7 +842,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "216"
+    SIDHighWatermark	    "221"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
@@ -856,33 +864,56 @@ Model {
     }
     Block {
       BlockType		      Inport
-      Name		      "bpm_noise"
-      SID		      "77"
-      Position		      [1208, 400, 1222, 430]
+      Name		      "sofb_setpoints"
+      SID		      "219"
+      Position		      [358, 15, 372, 45]
       ZOrder		      -1
       BlockRotation	      270
+      BlockMirror	      on
       Port		      "3"
       IconDisplay	      "Port number"
       PortDimensions	      "size(beam.d, 1)"
     }
     Block {
       BlockType		      Inport
-      Name		      "sloworbcorr_current_noise"
+      Name		      "fofb_setpoints"
+      SID		      "217"
+      Position		      [358, 260, 372, 290]
+      ZOrder		      -1
+      BlockRotation	      270
+      Port		      "4"
+      IconDisplay	      "Port number"
+      PortDimensions	      "size(beam.d, 1)"
+    }
+    Block {
+      BlockType		      Inport
+      Name		      "bpm_noise"
+      SID		      "77"
+      Position		      [1208, 400, 1222, 430]
+      ZOrder		      -1
+      BlockRotation	      270
+      Port		      "5"
+      IconDisplay	      "Port number"
+      PortDimensions	      "size(beam.d, 1)"
+    }
+    Block {
+      BlockType		      Inport
+      Name		      "corrsofb_current_noise"
       SID		      "78"
       Position		      [580, 133, 610, 147]
       ZOrder		      -1
       NamePlacement	      "alternate"
-      Port		      "4"
+      Port		      "6"
       IconDisplay	      "Port number"
       PortDimensions	      "ncorrsofb"
     }
     Block {
       BlockType		      Inport
-      Name		      "sloworbcorr_power_noise"
+      Name		      "corrsofb_power_noise"
       SID		      "79"
       Position		      [580, 158, 610, 172]
       ZOrder		      -1
-      Port		      "5"
+      Port		      "7"
       IconDisplay	      "Port number"
       PortDimensions	      "ncorrsofb"
     }
@@ -942,7 +973,7 @@ Model {
 	}
 	PropName		"Variants"
       }
-      ModelReferenceVersion   "1.176"
+      ModelReferenceVersion   "1.198"
       List {
 	ListType		InputPortNames
 	port0			"reference_orbit"
@@ -997,7 +1028,7 @@ Model {
       Name		      "Network Delay\n(fast orbit correctors)"
       SID		      "172"
       Ports		      [1, 1]
-      Position		      [425, 200, 455, 230]
+      Position		      [590, 200, 620, 230]
       ZOrder		      -10
       DelayTime		      "netdelay.corrfofb"
     }
@@ -1006,8 +1037,9 @@ Model {
       Name		      "Network Delay\n(slow orbit correctors)"
       SID		      "86"
       Ports		      [1, 1]
-      Position		      [425, 75, 455, 105]
+      Position		      [590, 75, 620, 105]
       ZOrder		      -10
+      NamePlacement	      "alternate"
       DelayTime		      "netdelay.corrsofb"
     }
     Block {
@@ -1042,7 +1074,7 @@ Model {
 	}
 	PropName		"Variants"
       }
-      ModelReferenceVersion   "1.14"
+      ModelReferenceVersion   "1.15"
       List {
 	ListType		InputPortNames
 	port0			"setpoints"
@@ -1085,6 +1117,34 @@ Model {
       ShowName		      off
       IconShape		      "round"
       Inputs		      "++|"
+      InputSameDT	      off
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Sum
+      Name		      "Sum1"
+      SID		      "220"
+      Ports		      [2, 1]
+      Position		      [355, 80, 375, 100]
+      ZOrder		      -18
+      ShowName		      off
+      IconShape		      "round"
+      Inputs		      "++|"
+      InputSameDT	      off
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Sum
+      Name		      "Sum2"
+      SID		      "221"
+      Ports		      [2, 1]
+      Position		      [355, 205, 375, 225]
+      ZOrder		      -18
+      ShowName		      off
+      IconShape		      "round"
+      Inputs		      "|++"
       InputSameDT	      off
       OutDataTypeStr	      "Inherit: Inherit via internal rule"
       SaturateOnIntegerOverflow	off
@@ -1165,7 +1225,7 @@ Model {
       BlockType		      Outport
       Name		      "control_sofb"
       SID		      "107"
-      Position		      [343, 15, 357, 45]
+      Position		      [478, 15, 492, 45]
       ZOrder		      -9
       BlockRotation	      270
       Port		      "2"
@@ -1175,7 +1235,7 @@ Model {
       BlockType		      Outport
       Name		      "control_fofb"
       SID		      "200"
-      Position		      [343, 260, 357, 290]
+      Position		      [478, 260, 492, 290]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1287,33 +1347,6 @@ Model {
       DstPort		      1
     }
     Line {
-      Labels		      [0, 0]
-      SrcBlock		      "Controllers"
-      SrcPort		      1
-      Points		      [25, 0]
-      Branch {
-	DstBlock		"control_sofb"
-	DstPort			1
-      }
-      Branch {
-	DstBlock		"Network Delay\n(slow orbit correctors)"
-	DstPort			1
-      }
-    }
-    Line {
-      SrcBlock		      "Controllers"
-      SrcPort		      2
-      Points		      [25, 0]
-      Branch {
-	DstBlock		"control_fofb"
-	DstPort			1
-      }
-      Branch {
-	DstBlock		"Network Delay\n(fast orbit correctors)"
-	DstPort			1
-      }
-    }
-    Line {
       SrcBlock		      "Network Delay\n(fast orbit correctors)"
       SrcPort		      1
       DstBlock		      "cat"
@@ -1338,13 +1371,13 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "sloworbcorr_power_noise"
+      SrcBlock		      "corrsofb_power_noise"
       SrcPort		      1
       DstBlock		      "Slow Orbit Correctors' Power Supplies"
       DstPort		      4
     }
     Line {
-      SrcBlock		      "sloworbcorr_current_noise"
+      SrcBlock		      "corrsofb_current_noise"
       SrcPort		      1
       DstBlock		      "Slow Orbit Correctors' Power Supplies"
       DstPort		      3
@@ -1352,7 +1385,7 @@ Model {
     Line {
       SrcBlock		      "select slow orbit correctors"
       SrcPort		      1
-      Points		      [-205, 0; 0, 85]
+      Points		      [-200, 0; 0, 85]
       DstBlock		      "Slow Orbit Correctors' Power Supplies"
       DstPort		      2
     }
@@ -1380,6 +1413,56 @@ Model {
       }
       Branch {
 	DstBlock		"Orbit Corrector\nMagnets"
+	DstPort			1
+      }
+    }
+    Line {
+      SrcBlock		      "Controllers"
+      SrcPort		      1
+      DstBlock		      "Sum1"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Sum1"
+      SrcPort		      1
+      Points		      [105, 0]
+      Branch {
+	DstBlock		"Network Delay\n(slow orbit correctors)"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"control_sofb"
+	DstPort			1
+      }
+    }
+    Line {
+      SrcBlock		      "sofb_setpoints"
+      SrcPort		      1
+      DstBlock		      "Sum1"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Controllers"
+      SrcPort		      2
+      DstBlock		      "Sum2"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "fofb_setpoints"
+      SrcPort		      1
+      DstBlock		      "Sum2"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Sum2"
+      SrcPort		      1
+      Points		      [105, 0]
+      Branch {
+	DstBlock		"Network Delay\n(fast orbit correctors)"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"control_fofb"
 	DstPort			1
       }
     }

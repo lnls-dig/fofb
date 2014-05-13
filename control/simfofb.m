@@ -70,18 +70,18 @@ if size(simvectors.orbit_distortion, 2) ~= ndist
     error('simvectors.orbit_distortion must have the same number of columns as the number of columns of DistMat (number of source of disturbances).');
 elseif size(simvectors.bpm_noise, 2) ~= nbpm
     error('simvectors.bpm_noise must have the same number of columns as the number of rows of RespMat (number of BPMs).');
-elseif size(simvectors.sloworbcorr_current_noise, 2) ~= ncorrsofb
-    error('simvectors.sloworbcorr_current_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
-elseif size(simvectors.sloworbcorr_power_noise, 2) ~= ncorrsofb
-    error('simvectors.sloworbcorr_power_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
+elseif size(simvectors.corrsofb_current_noise, 2) ~= ncorrsofb
+    error('simvectors.corrsofb_current_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
+elseif size(simvectors.corrsofb_power_noise, 2) ~= ncorrsofb
+    error('simvectors.corrsofb_power_noise must have the same number of columns as the number of columns of RespMat (number of orbit correctors).');
 elseif size(simvectors.orbit_distortion, 1) ~= length(simvectors.t)
     error('simvectors.orbit_distortion must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
 elseif size(simvectors.bpm_noise, 1) ~= length(simvectors.t)
     error('simvectors.bpm_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
-elseif size(simvectors.sloworbcorr_current_noise, 1) ~= length(simvectors.t)
-    error('simvectors.sloworbcorr_current_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
-elseif size(simvectors.sloworbcorr_power_noise, 1) ~= length(simvectors.t)
-    error('simvectors.sloworbcorr_power_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
+elseif size(simvectors.corrsofb_current_noise, 1) ~= length(simvectors.t)
+    error('simvectors.corrsofb_current_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
+elseif size(simvectors.corrsofb_power_noise, 1) ~= length(simvectors.t)
+    error('simvectors.corrsofb_power_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
 end
 
 % Beam dynamics MIMO model
@@ -97,7 +97,7 @@ distbeam.c = [];
 distbeam.d = distmat;
 
 % BPM MIMO model
-[a,b,c,d] = tf2ss(bpm.num, bpm.den);
+[a,b,c,d] = tf2ss(bpm.num, conv(bpm.den, [1 zeros(1, floor(netdelay.bpm/fofbctrl.Ts))]));
 [bpm.a, bpm.b, bpm.c, bpm.d] = repss(a,b,c,d,nbpm);
 
 % Slow corrector power supply output filter MIMO model
@@ -113,9 +113,9 @@ distbeam.d = distmat;
 [vacchamb.a, vacchamb.b, vacchamb.c, vacchamb.d] = repss(a,b,c,d,ncorr);
 
 % Communication network delays
-netdelay.bpm = repmat(netdelay.bpm, 1, nbpm);
-netdelay.corrfofb = repmat(netdelay.corrfofb, 1, ncorrfofb);
-netdelay.corrsofb = repmat(netdelay.corrsofb, 1, ncorrsofb);
+netdelay.bpm      = repmat(rem(netdelay.bpm, fofbctrl.Ts), 1, nbpm);
+netdelay.corrfofb = repmat(rem(netdelay.corrfofb, fofbctrl.Ts), 1, ncorrfofb);
+netdelay.corrsofb = repmat(rem(netdelay.corrsofb, sofbctrl.Ts), 1, ncorrsofb);
 
 % Quantization
 % quantization.bpm = repmat(quantization.bpm, 1, nbpm);
