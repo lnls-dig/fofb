@@ -24,7 +24,7 @@ Model {
       Name		      "control_fofb"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.176"
+    ComputedModelVersion    "1.198"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -45,9 +45,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Mon May 12 20:36:47 2014"
-  RTWModifiedTimeStamp	  321825733
-  ModelVersionFormat	  "1.%<AutoIncrement:176>"
+  LastModifiedDate	  "Tue May 13 19:10:34 2014"
+  RTWModifiedTimeStamp	  321909032
+  ModelVersionFormat	  "1.%<AutoIncrement:198>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -166,10 +166,10 @@ Model {
 	  MinStep		  "auto"
 	  MaxConsecutiveMinStep	  "1"
 	  RelTol		  "1e-3"
-	  SolverMode		  "Auto"
+	  SolverMode		  "SingleTasking"
 	  ConcurrentTasks	  off
-	  Solver		  "ode45"
-	  SolverName		  "ode45"
+	  Solver		  "FixedStepDiscrete"
+	  SolverName		  "FixedStepDiscrete"
 	  SolverJacobianMethodControl "auto"
 	  ShapePreserveControl	  "DisableAll"
 	  ZeroCrossControl	  "UseLocalSettings"
@@ -177,9 +177,19 @@ Model {
 	  AlgebraicLoopSolver	  "TrustRegion"
 	  SolverResetMethod	  "Fast"
 	  PositivePriorityOrder	  off
-	  AutoInsertRateTranBlk	  off
+	  AutoInsertRateTranBlk	  on
 	  SampleTimeConstraint	  "Unconstrained"
-	  InsertRTBMode		  "Whenever possible"
+	  InsertRTBMode		  "Always"
+	  Array {
+	    Type		    "Struct"
+	    Dimension		    1
+	    MATStruct {
+	      SampleTime	      "fofbctrl.Ts"
+	      Offset		      "0"
+	      Priority		      [0.0]
+	    }
+	    PropName		    "SampleTimeProperty"
+	  }
 	}
 	Simulink.DataIOCC {
 	  $ObjectID		  4
@@ -265,7 +275,7 @@ Model {
 	  LifeSpan		  "inf"
 	  MaxStackSize		  "Inherit from target"
 	  BufferReusableBoundary  on
-	  SimCompilerOptimization "Off"
+	  SimCompilerOptimization "On"
 	  AccelVerboseBuild	  off
 	  AccelParallelForEachSubsystem	on
 	}
@@ -296,7 +306,7 @@ Model {
 	  MaxConsecutiveZCsMsg	  "error"
 	  MaskedZcDiagnostic	  "warning"
 	  IgnoredZcDiagnostic	  "warning"
-	  SolverPrmCheckMsg	  "warning"
+	  SolverPrmCheckMsg	  "none"
 	  InheritedTsInSrcMsg	  "warning"
 	  DiscreteInheritContinuousMsg "warning"
 	  MultiTaskDSMMsg	  "error"
@@ -627,8 +637,8 @@ Model {
 	PropName		"Components"
       }
       Name		      "Configuration"
-      CurrentDlgPage	      "Optimization/Signals and Parameters"
-      ConfigPrmDlgPosition     [ 318, -13, 1363, 1033 ] 
+      CurrentDlgPage	      "Solver"
+      ConfigPrmDlgPosition     [ 430, 64, 1506, 1052 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -716,6 +726,15 @@ Model {
       InitialOutput	      "[]"
     }
     Block {
+      BlockType		      RateTransition
+      Integrity		      on
+      Deterministic	      on
+      X0		      "0"
+      OutPortSampleTimeOpt    "Specify"
+      OutPortSampleTimeMultiple	"1"
+      OutPortSampleTime	      "-1"
+    }
+    Block {
       BlockType		      Sum
       IconShape		      "rectangular"
       Inputs		      "++"
@@ -734,7 +753,7 @@ Model {
   }
   System {
     Name		    "ofbctrl"
-    Location		    [65, 163, 1057, 396]
+    Location		    [210, 744, 1202, 977]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -748,12 +767,12 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "221"
+    SIDHighWatermark	    "224"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
       SID		      "185"
-      Position		      [55, 83, 85, 97]
+      Position		      [55, 63, 85, 77]
       IconDisplay	      "Port number"
       PortDimensions	      "size(beam.d, 1)"
     }
@@ -761,7 +780,7 @@ Model {
       BlockType		      Inport
       Name		      "beam_orbit_measured"
       SID		      "183"
-      Position		      [55, 143, 85, 157]
+      Position		      [55, 123, 85, 137]
       Port		      "2"
       IconDisplay	      "Port number"
       PortDimensions	      "size(beam.d, 1)"
@@ -777,6 +796,14 @@ Model {
       C			      "fofbctrl.c"
       D			      "fofbctrl.d"
       SampleTime	      "fofbctrl.Ts"
+    }
+    Block {
+      BlockType		      RateTransition
+      Name		      "Rate Transition"
+      SID		      "222"
+      Position		      [305, 19, 345, 61]
+      ZOrder		      -10
+      OutPortSampleTimeMultiple	"ceil(fofbctrl.Ts/sofbctrl.Ts)"
     }
     Block {
       BlockType		      DiscreteStateSpace
@@ -795,7 +822,7 @@ Model {
       Name		      "Sum"
       SID		      "186"
       Ports		      [2, 1]
-      Position		      [175, 80, 195, 100]
+      Position		      [175, 60, 195, 80]
       ZOrder		      -18
       ShowName		      off
       IconShape		      "round"
@@ -849,15 +876,22 @@ Model {
       SrcPort		      1
       Points		      [40, 0]
       Branch {
-	Points			[0, -50]
-	DstBlock		"SOFB Controller"
-	DstPort			1
-      }
-      Branch {
-	Points			[0, 50]
+	Points			[0, 70]
 	DstBlock		"FOFB Controller"
 	DstPort			1
       }
+      Branch {
+	Points			[0, -30]
+	DstBlock		"Rate Transition"
+	DstPort			1
+      }
+    }
+    Line {
+      Labels		      [0, 0]
+      SrcBlock		      "Rate Transition"
+      SrcPort		      1
+      DstBlock		      "SOFB Controller"
+      DstPort		      1
     }
   }
 }
