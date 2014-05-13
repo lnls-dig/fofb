@@ -1,0 +1,6 @@
+# Matlab
+*.asv
+
+# Simulink
+*.mexa64
+slprj/
