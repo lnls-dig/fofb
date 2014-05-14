@@ -38,8 +38,12 @@ function simout = simfofb(param)
 %                   .control_ps: power supply controller's control signal output
 %                   .sensor_ps: power supply controller's sensor signal input
 
-repsmat = param.respmat;
-distmat = param.distmat;
+respmat = param.beam.sys.d;
+distmat = param.distbeam.sys.d;
+
+
+beam = param.beam;
+distbeam = param.distbeam;
 bpm = param.bpm;
 sofbctrl = param.sofbctrl;
 fofbctrl = param.fofbctrl;
@@ -52,15 +56,15 @@ netdelay = param.netdelay;
 simvectors = param.simvectors;
 
 % Check if all matrix dimensions are correct
-if size(repsmat, 1) ~= size(distmat, 1)
+if size(respmat, 1) ~= size(distmat, 1)
     error('distmat must have the same number of rows as tpsctrl.Ts = psctrl.Ts;he number of rows of respmat (number of beam position readings).');
 end
 
 % Extract number of BPMs, orbit correctors and sources of disturbance
-nbpm = size(repsmat, 1);
-ncorr = size(repsmat, 2);
-ncorrfofb = size(fofbctrl.d, 1);
-ncorrsofb = size(sofbctrl.d, 1);
+nbpm = size(respmat, 1);
+ncorr = size(respmat, 2);
+ncorrfofb = size(fofbctrl.sys.d, 1);
+ncorrsofb = size(sofbctrl.sys.d, 1);
 ndist = size(distmat, 2);
 
 % check ncorr == ncorrfofb+ncorrsofb
@@ -84,38 +88,46 @@ elseif size(simvectors.corrsofb_power_noise, 1) ~= length(simvectors.t)
     error('simvectors.corrsofb_power_noise must have the same number of rows as the number of elements of simvectors.t (number of simulation samples).');
 end
 
-% Beam dynamics MIMO model
-beam.a = [];
-beam.b = [];
-beam.c = [];
-beam.d = repsmat;
-
-% Beam disturbance MIMO model
-distbeam.a = [];
-distbeam.b = [];
-distbeam.c = [];
-distbeam.d = distmat;
+% Communication network delays
+fracnetdelay.bpm      = repmat(rem(netdelay.bpm, fofbctrl.sys.Ts), 1, nbpm);
+fracnetdelay.corrfofb = repmat(rem(netdelay.corrfofb, fofbctrl.sys.Ts), 1, ncorrfofb);
+fracnetdelay.corrsofb = repmat(rem(netdelay.corrsofb, sofbctrl.sys.Ts), 1, ncorrsofb);
 
 % BPM MIMO model
-[a,b,c,d] = tf2ss(bpm.num, conv(bpm.den, [1 zeros(1, floor(netdelay.bpm/fofbctrl.Ts))]));
-[bpm.a, bpm.b, bpm.c, bpm.d] = repss(a,b,c,d,nbpm);
+[num,den] = eqtflength(bpm.num, bpm.den);
+[a,b,c,d] = tf2ss(num, den);
+[a,b,c,d] = repss(a,b,c,d,nbpm);
+bpm.sys = ss(a,b,c,d, fofbctrl.sys.Ts);
+delay = floor(fracnetdelay.bpm/fofbctrl.sys.Ts);
+%if delay > 0
+    bpm.sys.OutputDelay = 1+0*delay;
+%end
 
 % Slow corrector power supply output filter MIMO model
 [a,b,c,d] = tf2ss(corrsofbpsfilter.num, corrsofbpsfilter.den);
-[corrsofbpsfilter.a, corrsofbpsfilter.b, corrsofbpsfilter.c, corrsofbpsfilter.d] = repss(a,b,c,d,ncorrsofb);
+[a,b,c,d] = repss(a,b,c,d,ncorrsofb);
+corrsofbpsfilter.sys = ss(a,b,c,d);
 
 % Corrector magnets MIMO model
 [a,b,c,d] = tf2ss(corrmagnet.num, corrmagnet.den);
-[corrmagnet.a, corrmagnet.b, corrmagnet.c, corrmagnet.d] = repss(a,b,c,d,ncorr);
+[a,b,c,d] = repss(a,b,c,d,ncorr);
+corrmagnet.sys = ss(a,b,c,d);
 
 % Vacuum chamber MIMO model
 [a,b,c,d] = tf2ss(vacchamb.num, vacchamb.den);
-[vacchamb.a, vacchamb.b, vacchamb.c, vacchamb.d] = repss(a,b,c,d,ncorr);
+[a,b,c,d] = repss(a,b,c,d,ncorr);
+vacchamb.sys = ss(a,b,c,d);
 
-% Communication network delays
-netdelay.bpm      = repmat(rem(netdelay.bpm, fofbctrl.Ts), 1, nbpm);
-netdelay.corrfofb = repmat(rem(netdelay.corrfofb, fofbctrl.Ts), 1, ncorrfofb);
-netdelay.corrsofb = repmat(rem(netdelay.corrsofb, sofbctrl.Ts), 1, ncorrsofb);
+
+delay = floor(fracnetdelay.corrfofb/fofbctrl.sys.Ts);
+if delay > 0
+    fofbctrl.sys.OutputDelay = delay;
+end
+
+delay = floor(fracnetdelay.corrsofb/sofbctrl.sys.Ts);
+if delay > 0
+    sofbctrl.sys.OutputDelay = delay;
+end
 
 % Quantization
 % quantization.bpm = repmat(quantization.bpm, 1, nbpm);
@@ -144,7 +156,7 @@ elseif strcmpi(sofb_pstype, 'x')
 elseif strcmpi(sofb_pstype, 'y')
 end
 save_system(modelname);
-close_system(modelname);
+%close_system(modelname);
 
 % Assign simulation parameters to workspace so that Simulink can use it
 assignin('base', 'beam', beam);
@@ -156,7 +168,9 @@ assignin('base', 'corrsofbpsfilter', corrsofbpsfilter);
 assignin('base', 'corrmagnetgain', corrmagnetgain);
 assignin('base', 'corrmagnet', corrmagnet);
 assignin('base', 'vacchamb', vacchamb);
-assignin('base', 'netdelay', netdelay);
+assignin('base', 'fracnetdelay', fracnetdelay);
+assignin('base', 'nbpm', nbpm);
+assignin('base', 'ndist', ndist);
 assignin('base', 'ncorr', ncorr);
 assignin('base', 'ncorrsofb', ncorrsofb);
 assignin('base', 'ncorrfofb', ncorrfofb);

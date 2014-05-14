@@ -59,7 +59,7 @@ Model {
       Name		      "corr_currents"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.170"
+    ComputedModelVersion    "1.181"
     NumModelReferences	    2
     ModelReference {
       ModelRefBlockPath	      "ofb/Controllers|ofbctrl"
@@ -86,9 +86,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 13 19:27:27 2014"
-  RTWModifiedTimeStamp	  321909714
-  ModelVersionFormat	  "1.%<AutoIncrement:170>"
+  LastModifiedDate	  "Tue May 13 21:11:07 2014"
+  RTWModifiedTimeStamp	  321915559
+  ModelVersionFormat	  "1.%<AutoIncrement:181>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -321,8 +321,8 @@ Model {
 	  ReadBeforeWriteMsg	  "UseLocalSettings"
 	  WriteAfterWriteMsg	  "UseLocalSettings"
 	  WriteAfterReadMsg	  "UseLocalSettings"
-	  AlgebraicLoopMsg	  "warning"
-	  ArtificialAlgebraicLoopMsg "warning"
+	  AlgebraicLoopMsg	  "none"
+	  ArtificialAlgebraicLoopMsg "none"
 	  SaveWithDisabledLinksMsg "warning"
 	  SaveWithParameterizedLinksMsg	"warning"
 	  CheckSSInitialOutputMsg on
@@ -668,8 +668,8 @@ Model {
 	PropName		"Components"
       }
       Name		      "Configuration"
-      CurrentDlgPage	      "Data Import//Export"
-      ConfigPrmDlgPosition     [ 322, 135, 1358, 1027 ] 
+      CurrentDlgPage	      "Diagnostics"
+      ConfigPrmDlgPosition     [ 302, 59, 1378, 1047 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -713,18 +713,6 @@ Model {
       BlockType		      Concatenate
       NumInputs		      "2"
       ConcatenateDimension    "1"
-    }
-    Block {
-      BlockType		      DiscreteStateSpace
-      A			      "1"
-      B			      "1"
-      C			      "1"
-      D			      "1"
-      X0		      "0"
-      SampleTime	      "1"
-      StateMustResolveToSignalObject off
-      RTWStateStorageClass    "Auto"
-      Realization	      "auto"
     }
     Block {
       BlockType		      Gain
@@ -790,17 +778,6 @@ Model {
       SampleTime	      "-1"
     }
     Block {
-      BlockType		      StateSpace
-      A			      "1"
-      B			      "1"
-      C			      "1"
-      D			      "1"
-      X0		      "0"
-      AbsoluteTolerance	      "auto"
-      ContinuousStateAttributes	"''"
-      Realization	      "auto"
-    }
-    Block {
       BlockType		      Sum
       IconShape		      "rectangular"
       Inputs		      "++"
@@ -825,11 +802,15 @@ Model {
       TransDelayFeedthrough   off
       PadeOrder		      "0"
     }
+    Block {
+      BlockType		      ZeroOrderHold
+      SampleTime	      "1"
+    }
   }
   System {
     Name		    "ofb"
-    Location		    [78, 255, 1630, 724]
-    Open		    off
+    Location		    [66, 348, 1618, 817]
+    Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
     ScreenColor		    "white"
@@ -842,65 +823,65 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "221"
+    SIDHighWatermark	    "232"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
       SID		      "202"
-      Position		      [40, 83, 70, 97]
+      Position		      [35, 128, 65, 142]
       ZOrder		      -1
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "nbpm"
     }
     Block {
       BlockType		      Inport
       Name		      "orbit_distortion"
       SID		      "76"
-      Position		      [1235, 58, 1265, 72]
+      Position		      [1230, 103, 1260, 117]
       ZOrder		      -1
       Port		      "2"
       IconDisplay	      "Port number"
-      PortDimensions	      "size(distbeam.d, 2)"
+      PortDimensions	      "ndist"
     }
     Block {
       BlockType		      Inport
       Name		      "sofb_setpoints"
       SID		      "219"
-      Position		      [358, 15, 372, 45]
+      Position		      [353, 25, 367, 55]
       ZOrder		      -1
       BlockRotation	      270
       BlockMirror	      on
       Port		      "3"
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "ncorrsofb"
     }
     Block {
       BlockType		      Inport
       Name		      "fofb_setpoints"
       SID		      "217"
-      Position		      [358, 260, 372, 290]
+      Position		      [353, 340, 367, 370]
       ZOrder		      -1
       BlockRotation	      270
       Port		      "4"
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "ncorrfofb"
     }
     Block {
       BlockType		      Inport
       Name		      "bpm_noise"
       SID		      "77"
-      Position		      [1208, 400, 1222, 430]
+      Position		      [868, 445, 882, 475]
       ZOrder		      -1
       BlockRotation	      270
       Port		      "5"
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "nbpm"
     }
     Block {
       BlockType		      Inport
       Name		      "corrsofb_current_noise"
       SID		      "78"
-      Position		      [580, 133, 610, 147]
+      Position		      [575, 178, 605, 192]
       ZOrder		      -1
       NamePlacement	      "alternate"
       Port		      "6"
@@ -911,53 +892,44 @@ Model {
       BlockType		      Inport
       Name		      "corrsofb_power_noise"
       SID		      "79"
-      Position		      [580, 158, 610, 172]
+      Position		      [575, 203, 605, 217]
       ZOrder		      -1
       Port		      "7"
       IconDisplay	      "Port number"
       PortDimensions	      "ncorrsofb"
     }
     Block {
-      BlockType		      DiscreteStateSpace
-      Name		      "BPMs"
-      SID		      "81"
-      Position		      [1055, 346, 1165, 384]
-      ZOrder		      -9
-      BlockMirror	      on
-      A			      "bpm.a"
-      B			      "bpm.b"
-      C			      "bpm.c"
-      D			      "bpm.d"
-      SampleTime	      "bpm.Ts"
-    }
-    Block {
-      BlockType		      StateSpace
+      BlockType		      Reference
       Name		      "Beam Orbit"
-      SID		      "82"
-      Position		      [1320, 158, 1395, 192]
-      ZOrder		      -8
-      A			      "beam.a"
-      B			      "beam.b"
-      C			      "beam.c"
-      D			      "beam.d"
+      SID		      "228"
+      Ports		      [1, 1]
+      Position		      [1305, 202, 1400, 238]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "beam.sys"
+      IC		      "[]"
     }
     Block {
-      BlockType		      StateSpace
+      BlockType		      Reference
       Name		      "Beam Orbit\nDistortion"
-      SID		      "84"
-      Position		      [1310, 48, 1385, 82]
-      ZOrder		      -8
-      A			      "distbeam.a"
-      B			      "distbeam.b"
-      C			      "distbeam.c"
-      D			      "distbeam.d"
+      SID		      "229"
+      Ports		      [1, 1]
+      Position		      [1305, 92, 1400, 128]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "distbeam.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      ModelReference
       Name		      "Controllers"
       SID		      "211"
       Ports		      [2, 2]
-      Position		      [120, 27, 320, 278]
+      Position		      [115, 72, 315, 323]
       ZOrder		      -17
       ModelNameDialog	      "ofbctrl"
       SimulationMode	      "Accelerator"
@@ -973,7 +945,7 @@ Model {
 	}
 	PropName		"Variants"
       }
-      ModelReferenceVersion   "1.198"
+      ModelReferenceVersion   "1.203"
       List {
 	ListType		InputPortNames
 	port0			"reference_orbit"
@@ -1006,7 +978,7 @@ Model {
       BlockType		      Gain
       Name		      "Current to \nMagnetic field\nGain"
       SID		      "176"
-      Position		      [1150, 160, 1180, 190]
+      Position		      [1145, 205, 1175, 235]
       ZOrder		      -8
       Gain		      "corrmagnetgain"
       ParamDataTypeStr	      "Inherit: Inherit via internal rule"
@@ -1015,50 +987,69 @@ Model {
     }
     Block {
       BlockType		      TransportDelay
-      Name		      "Network Delay\n(BPMs)"
+      Name		      "Fine Network Delay\n(BPMs)"
       SID		      "87"
       Ports		      [1, 1]
-      Position		      [420, 350, 450, 380]
+      Position		      [1050, 395, 1080, 425]
       ZOrder		      -10
       BlockMirror	      on
-      DelayTime		      "netdelay.bpm"
+      DelayTime		      "fracnetdelay.bpm"
+      TransDelayFeedthrough   on
     }
     Block {
       BlockType		      TransportDelay
-      Name		      "Network Delay\n(fast orbit correctors)"
+      Name		      "Fine Network Delay\n(fast orbit correctors)"
       SID		      "172"
       Ports		      [1, 1]
-      Position		      [590, 200, 620, 230]
+      Position		      [585, 245, 615, 275]
       ZOrder		      -10
-      DelayTime		      "netdelay.corrfofb"
+      DelayTime		      "fracnetdelay.corrfofb"
+      TransDelayFeedthrough   on
     }
     Block {
       BlockType		      TransportDelay
-      Name		      "Network Delay\n(slow orbit correctors)"
+      Name		      "Fine Network Delay\n(slow orbit correctors)"
       SID		      "86"
       Ports		      [1, 1]
-      Position		      [590, 75, 620, 105]
+      Position		      [585, 120, 615, 150]
       ZOrder		      -10
       NamePlacement	      "alternate"
-      DelayTime		      "netdelay.corrsofb"
+      DelayTime		      "fracnetdelay.corrsofb"
+      TransDelayFeedthrough   on
     }
     Block {
-      BlockType		      StateSpace
-      Name		      "Orbit Corrector\nMagnets"
-      SID		      "83"
-      Position		      [1015, 158, 1095, 192]
-      ZOrder		      -8
-      A			      "corrmagnet.a"
-      B			      "corrmagnet.b"
-      C			      "corrmagnet.c"
-      D			      "corrmagnet.d"
+      BlockType		      Reference
+      Name		      "LTI System"
+      SID		      "222"
+      Ports		      [1, 1]
+      Position		      [505, 392, 600, 428]
+      ZOrder		      -1
+      BlockMirror	      on
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "bpm.sys"
+      IC		      "[]"
+    }
+    Block {
+      BlockType		      Reference
+      Name		      "Orbit Corrector\nMagnets\n(Current)"
+      SID		      "226"
+      Ports		      [1, 1]
+      Position		      [1000, 202, 1095, 238]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "corrmagnet.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      ModelReference
       Name		      "Slow Orbit Correctors' Power Supplies"
       SID		      "207"
       Ports		      [4, 1]
-      Position		      [695, 73, 880, 182]
+      Position		      [690, 118, 875, 227]
       ZOrder		      -17
       ModelNameDialog	      "corrsofb_ps_voltage.mdl"
       SimulationMode	      "Accelerator"
@@ -1074,7 +1065,7 @@ Model {
 	}
 	PropName		"Variants"
       }
-      ModelReferenceVersion   "1.15"
+      ModelReferenceVersion   "1.18"
       List {
 	ListType		InputPortNames
 	port0			"setpoints"
@@ -1112,7 +1103,7 @@ Model {
       Name		      "Sum"
       SID		      "152"
       Ports		      [2, 1]
-      Position		      [1425, 165, 1445, 185]
+      Position		      [1420, 210, 1440, 230]
       ZOrder		      -18
       ShowName		      off
       IconShape		      "round"
@@ -1126,7 +1117,7 @@ Model {
       Name		      "Sum1"
       SID		      "220"
       Ports		      [2, 1]
-      Position		      [355, 80, 375, 100]
+      Position		      [350, 125, 370, 145]
       ZOrder		      -18
       ShowName		      off
       IconShape		      "round"
@@ -1140,7 +1131,7 @@ Model {
       Name		      "Sum2"
       SID		      "221"
       Ports		      [2, 1]
-      Position		      [355, 205, 375, 225]
+      Position		      [350, 250, 370, 270]
       ZOrder		      -18
       ShowName		      off
       IconShape		      "round"
@@ -1154,7 +1145,7 @@ Model {
       Name		      "Sum3"
       SID		      "104"
       Ports		      [2, 1]
-      Position		      [1205, 355, 1225, 375]
+      Position		      [865, 400, 885, 420]
       ZOrder		      -18
       BlockMirror	      on
       ShowName		      off
@@ -1165,22 +1156,46 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
-      BlockType		      StateSpace
+      BlockType		      Reference
       Name		      "Vacuum Chamber"
-      SID		      "105"
-      Position		      [1215, 158, 1290, 192]
-      ZOrder		      -8
-      A			      "vacchamb.a"
-      B			      "vacchamb.b"
-      C			      "vacchamb.c"
-      D			      "vacchamb.d"
+      SID		      "227"
+      Ports		      [1, 1]
+      Position		      [1195, 202, 1290, 238]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "vacchamb.sys"
+      IC		      "[]"
+    }
+    Block {
+      BlockType		      ZeroOrderHold
+      Name		      "Zero-Order\nHold (FOFB)"
+      SID		      "232"
+      Position		      [345, 290, 375, 320]
+      ZOrder		      -19
+      BlockRotation	      270
+      ShowName		      off
+      SampleTime	      "fofbctrl.sys.Ts"
+    }
+    Block {
+      BlockType		      ZeroOrderHold
+      Name		      "Zero-Order\nHold (SOFB)"
+      SID		      "230"
+      Position		      [345, 75, 375, 105]
+      ZOrder		      -19
+      BlockRotation	      270
+      BlockMirror	      on
+      NamePlacement	      "alternate"
+      ShowName		      off
+      SampleTime	      "sofbctrl.sys.Ts"
     }
     Block {
       BlockType		      Concatenate
       Name		      "cat"
       SID		      "170"
       Ports		      [2, 1]
-      Position		      [900, 85, 905, 260]
+      Position		      [895, 130, 900, 305]
       ZOrder		      -19
       ShowName		      off
       Mode		      "Vector"
@@ -1190,7 +1205,7 @@ Model {
       Name		      "select slow orbit correctors"
       SID		      "171"
       Ports		      [1, 1]
-      Position		      [880, 16, 920, 44]
+      Position		      [875, 61, 915, 89]
       ZOrder		      -17
       BlockMirror	      on
       ShowName		      off
@@ -1204,7 +1219,7 @@ Model {
       Name		      "select slow orbit correctors1"
       SID		      "215"
       Ports		      [1, 1]
-      Position		      [935, 161, 975, 189]
+      Position		      [930, 206, 970, 234]
       ZOrder		      -17
       NamePlacement	      "alternate"
       ShowName		      off
@@ -1217,7 +1232,7 @@ Model {
       BlockType		      Outport
       Name		      "beam_orbit"
       SID		      "106"
-      Position		      [1495, 168, 1525, 182]
+      Position		      [1490, 213, 1520, 227]
       ZOrder		      -9
       IconDisplay	      "Port number"
     }
@@ -1225,7 +1240,7 @@ Model {
       BlockType		      Outport
       Name		      "control_sofb"
       SID		      "107"
-      Position		      [478, 15, 492, 45]
+      Position		      [473, 25, 487, 55]
       ZOrder		      -9
       BlockRotation	      270
       Port		      "2"
@@ -1235,7 +1250,7 @@ Model {
       BlockType		      Outport
       Name		      "control_fofb"
       SID		      "200"
-      Position		      [478, 260, 492, 290]
+      Position		      [473, 340, 487, 370]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1246,7 +1261,7 @@ Model {
       BlockType		      Outport
       Name		      "corr_voltages"
       SID		      "108"
-      Position		      [983, 260, 997, 290]
+      Position		      [978, 305, 992, 335]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1257,7 +1272,7 @@ Model {
       BlockType		      Outport
       Name		      "corr_currents"
       SID		      "201"
-      Position		      [1103, 260, 1117, 290]
+      Position		      [1098, 305, 1112, 335]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1283,12 +1298,6 @@ Model {
       DstPort		      2
     }
     Line {
-      SrcBlock		      "BPMs"
-      SrcPort		      1
-      DstBlock		      "Network Delay\n(BPMs)"
-      DstPort		      1
-    }
-    Line {
       SrcBlock		      "Vacuum Chamber"
       SrcPort		      1
       DstBlock		      "Beam Orbit"
@@ -1298,7 +1307,7 @@ Model {
       Labels		      [0, 0]
       SrcBlock		      "Beam Orbit\nDistortion"
       SrcPort		      1
-      Points		      [45, 0]
+      Points		      [25, 0]
       DstBlock		      "Sum"
       DstPort		      1
     }
@@ -1312,14 +1321,14 @@ Model {
       }
       Branch {
 	Points			[0, 190]
-	DstBlock		"Sum3"
+	DstBlock		"Fine Network Delay\n(BPMs)"
 	DstPort			1
       }
     }
     Line {
-      SrcBlock		      "Orbit Corrector\nMagnets"
+      SrcBlock		      "Orbit Corrector\nMagnets\n(Current)"
       SrcPort		      1
-      Points		      [10, 0]
+      Points		      [5, 0]
       Branch {
 	Points			[0, -145]
 	DstBlock		"select slow orbit correctors"
@@ -1337,7 +1346,7 @@ Model {
     Line {
       SrcBlock		      "Sum3"
       SrcPort		      1
-      DstBlock		      "BPMs"
+      DstBlock		      "LTI System"
       DstPort		      1
     }
     Line {
@@ -1347,7 +1356,7 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Network Delay\n(fast orbit correctors)"
+      SrcBlock		      "Fine Network Delay\n(fast orbit correctors)"
       SrcPort		      1
       DstBlock		      "cat"
       DstPort		      2
@@ -1390,18 +1399,10 @@ Model {
       DstPort		      2
     }
     Line {
-      SrcBlock		      "Network Delay\n(slow orbit correctors)"
+      SrcBlock		      "Fine Network Delay\n(slow orbit correctors)"
       SrcPort		      1
       DstBlock		      "Slow Orbit Correctors' Power Supplies"
       DstPort		      1
-    }
-    Line {
-      Labels		      [0, 0]
-      SrcBlock		      "Network Delay\n(BPMs)"
-      SrcPort		      1
-      Points		      [-310, 0]
-      DstBlock		      "Controllers"
-      DstPort		      2
     }
     Line {
       SrcBlock		      "select slow orbit correctors1"
@@ -1412,7 +1413,7 @@ Model {
 	DstPort			1
       }
       Branch {
-	DstBlock		"Orbit Corrector\nMagnets"
+	DstBlock		"Orbit Corrector\nMagnets\n(Current)"
 	DstPort			1
       }
     }
@@ -1427,7 +1428,7 @@ Model {
       SrcPort		      1
       Points		      [105, 0]
       Branch {
-	DstBlock		"Network Delay\n(slow orbit correctors)"
+	DstBlock		"Fine Network Delay\n(slow orbit correctors)"
 	DstPort			1
       }
       Branch {
@@ -1438,7 +1439,7 @@ Model {
     Line {
       SrcBlock		      "sofb_setpoints"
       SrcPort		      1
-      DstBlock		      "Sum1"
+      DstBlock		      "Zero-Order\nHold (SOFB)"
       DstPort		      1
     }
     Line {
@@ -1450,21 +1451,46 @@ Model {
     Line {
       SrcBlock		      "fofb_setpoints"
       SrcPort		      1
-      DstBlock		      "Sum2"
-      DstPort		      2
+      DstBlock		      "Zero-Order\nHold (FOFB)"
+      DstPort		      1
     }
     Line {
       SrcBlock		      "Sum2"
       SrcPort		      1
       Points		      [105, 0]
       Branch {
-	DstBlock		"Network Delay\n(fast orbit correctors)"
+	DstBlock		"Fine Network Delay\n(fast orbit correctors)"
 	DstPort			1
       }
       Branch {
 	DstBlock		"control_fofb"
 	DstPort			1
       }
+    }
+    Line {
+      SrcBlock		      "Fine Network Delay\n(BPMs)"
+      SrcPort		      1
+      DstBlock		      "Sum3"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "LTI System"
+      SrcPort		      1
+      Points		      [-445, 0; 0, -150]
+      DstBlock		      "Controllers"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Zero-Order\nHold (SOFB)"
+      SrcPort		      1
+      DstBlock		      "Sum1"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Zero-Order\nHold (FOFB)"
+      SrcPort		      1
+      DstBlock		      "Sum2"
+      DstPort		      2
     }
   }
 }

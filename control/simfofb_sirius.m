@@ -2,19 +2,20 @@ function simout = simfofb_sirius
 
 load ../matlab.mat
 
-M = M(:,ceil((end+1)/2):end,3);
-Md = Mdq(:,:,3);
-
-M=1;
-Md=ones(1,400);
+respmat = M(:,ceil((end+1)/2):end,3);
+distmat = Mdq(:,:,3);
 
 % Matrices
-nbpm = size(M,1);
-ncorr = size(M,2);
-ndist = size(Md,2);
-param.respmat = M;
-corrmat = pinv(param.respmat);
-param.distmat = Md;
+nbpm = size(respmat,1);
+ncorr = size(respmat,2);
+ndist = size(distmat,2);
+corrmat = pinv(respmat);
+
+% Beam dynamics MIMO model
+param.beam.sys = ss([],[],[],respmat);
+
+% Beam disturbance MIMO model
+param.distbeam.sys = ss([],[],[],distmat);
 
 % BPM (FOFB sensor)
 bpm_cic_decfactor = 1015;
@@ -43,37 +44,32 @@ mu0 = 4*pi*1e-7;
 [param.vacchamb.num, param.vacchamb.den] = build1order(0.5*mu0*vac_conductivity*vac_radius*vac_thickness);
 
 % FOFB controller
-[a,b,c,d] = tf2ss(0.1*[1 0], [1 -1]);
-[param.fofbctrl.a, b, param.fofbctrl.c, d] = repss(a,b,c,d,ncorr);
-param.fofbctrl.b = b*corrmat;
-param.fofbctrl.d = d*corrmat;
-param.fofbctrl.Ts = 10e-6;
-
-
+num = 0.001*[1 0];
+den = [1 -1];
+[num,den] = eqtflength(num, den);
+[a,b,c,d] = tf2ss(num, den);
+[a,b,c,d] = repss(a,b,c,d,ncorr);
+param.fofbctrl.sys = ss(a, b*corrmat, c, d*corrmat, 10e-6);
 
 % SOFB controller
-param.sofbctrl.a = [];
-param.sofbctrl.b = [];
-param.sofbctrl.c = [];
-param.sofbctrl.d = ones(1,nbpm);
-param.sofbctrl.Ts = 1;
+param.sofbctrl.sys = ss([], [], [], ones(1,nbpm), 1);
 
 % Communication network delays
-param.netdelay.bpm = 10e-6;
-param.netdelay.corrfofb = 10e-6;
-param.netdelay.corrsofb = 10e-6;
+param.netdelay.bpm = 11e-6;
+param.netdelay.corrfofb = 12e-6;
+param.netdelay.corrsofb = 103e-6;
 
 
 %%%%%%%%%%%%
 ncorrsofb = 1;
-ncorrfofb = size(param.fofbctrl.d, 1);
+ncorrfofb = size(param.fofbctrl.sys.d, 1);
 param.corrselectsofb = 1;
 param.ncorr = 1;
 param.corrordering = 1+(1:ncorr);
 
 
 % Build simulation vectors
-t = (0:1e-6:0.01)';
+t = (0:1e-6:0.1)';
 npts = length(t);
 param.simvectors.t = t;
 param.simvectors.reference_orbit = zeros(npts,nbpm);

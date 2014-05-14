@@ -24,7 +24,7 @@ Model {
       Name		      "control_fofb"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.198"
+    ComputedModelVersion    "1.203"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -45,9 +45,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 13 19:10:34 2014"
-  RTWModifiedTimeStamp	  321909032
-  ModelVersionFormat	  "1.%<AutoIncrement:198>"
+  LastModifiedDate	  "Tue May 13 20:58:47 2014"
+  RTWModifiedTimeStamp	  321915521
+  ModelVersionFormat	  "1.%<AutoIncrement:203>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -85,7 +85,6 @@ Model {
     $ObjectID		    1
     $ClassName		    "Simulink.SimulationData.ModelLoggingInfo"
     model_		    "ofbctrl"
-    signals_		    []
     overrideMode_	    [0.0]
     Array {
       Type		      "Cell"
@@ -290,8 +289,8 @@ Model {
 	  ReadBeforeWriteMsg	  "UseLocalSettings"
 	  WriteAfterWriteMsg	  "UseLocalSettings"
 	  WriteAfterReadMsg	  "UseLocalSettings"
-	  AlgebraicLoopMsg	  "warning"
-	  ArtificialAlgebraicLoopMsg "warning"
+	  AlgebraicLoopMsg	  "none"
+	  ArtificialAlgebraicLoopMsg "none"
 	  SaveWithDisabledLinksMsg "warning"
 	  SaveWithParameterizedLinksMsg	"warning"
 	  CheckSSInitialOutputMsg on
@@ -637,8 +636,8 @@ Model {
 	PropName		"Components"
       }
       Name		      "Configuration"
-      CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 430, 64, 1506, 1052 ] 
+      CurrentDlgPage	      "Diagnostics"
+      ConfigPrmDlgPosition     [ 356, 155, 1323, 951 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -678,18 +677,6 @@ Model {
     FontAngle		    "normal"
   }
   BlockParameterDefaults {
-    Block {
-      BlockType		      DiscreteStateSpace
-      A			      "1"
-      B			      "1"
-      C			      "1"
-      D			      "1"
-      X0		      "0"
-      SampleTime	      "1"
-      StateMustResolveToSignalObject off
-      RTWStateStorageClass    "Auto"
-      Realization	      "auto"
-    }
     Block {
       BlockType		      Inport
       Port		      "1"
@@ -753,7 +740,7 @@ Model {
   }
   System {
     Name		    "ofbctrl"
-    Location		    [210, 744, 1202, 977]
+    Location		    [399, 546, 1075, 752]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -767,14 +754,14 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "224"
+    SIDHighWatermark	    "226"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
       SID		      "185"
       Position		      [55, 63, 85, 77]
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "size(beam.sys.d, 1)"
     }
     Block {
       BlockType		      Inport
@@ -783,19 +770,20 @@ Model {
       Position		      [55, 123, 85, 137]
       Port		      "2"
       IconDisplay	      "Port number"
-      PortDimensions	      "size(beam.d, 1)"
+      PortDimensions	      "size(beam.sys.d, 1)"
     }
     Block {
-      BlockType		      DiscreteStateSpace
+      BlockType		      Reference
       Name		      "FOFB Controller"
-      SID		      "165"
-      Position		      [630, 121, 760, 159]
-      ZOrder		      -9
-      A			      "fofbctrl.a"
-      B			      "fofbctrl.b"
-      C			      "fofbctrl.c"
-      D			      "fofbctrl.d"
-      SampleTime	      "fofbctrl.Ts"
+      SID		      "226"
+      Ports		      [1, 1]
+      Position		      [425, 112, 520, 148]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "fofbctrl.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      RateTransition
@@ -806,16 +794,17 @@ Model {
       OutPortSampleTimeMultiple	"ceil(fofbctrl.Ts/sofbctrl.Ts)"
     }
     Block {
-      BlockType		      DiscreteStateSpace
+      BlockType		      Reference
       Name		      "SOFB Controller"
-      SID		      "221"
-      Position		      [630, 21, 760, 59]
-      ZOrder		      -9
-      A			      "sofbctrl.a"
-      B			      "sofbctrl.b"
-      C			      "sofbctrl.c"
-      D			      "sofbctrl.d"
-      SampleTime	      "sofbctrl.Ts"
+      SID		      "225"
+      Ports		      [1, 1]
+      Position		      [425, 22, 520, 58]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "sofbctrl.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      Sum
@@ -835,34 +824,47 @@ Model {
       BlockType		      Outport
       Name		      "control_sofb"
       SID		      "181"
-      Position		      [910, 33, 940, 47]
+      Position		      [580, 33, 610, 47]
       IconDisplay	      "Port number"
     }
     Block {
       BlockType		      Outport
       Name		      "control_fofb"
       SID		      "182"
-      Position		      [910, 133, 940, 147]
+      Position		      [580, 123, 610, 137]
       Port		      "2"
       IconDisplay	      "Port number"
-    }
-    Line {
-      SrcBlock		      "FOFB Controller"
-      SrcPort		      1
-      DstBlock		      "control_fofb"
-      DstPort		      1
     }
     Line {
       SrcBlock		      "beam_orbit_measured"
       SrcPort		      1
       Points		      [95, 0]
-      DstBlock		      "Sum"
-      DstPort		      2
+      Branch {
+	DstBlock		"Sum"
+	DstPort			2
+      }
+      Branch {
+	DstBlock		"FOFB Controller"
+	DstPort			1
+      }
     }
     Line {
       SrcBlock		      "reference_orbit"
       SrcPort		      1
       DstBlock		      "Sum"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Sum"
+      SrcPort		      1
+      Points		      [40, 0; 0, -30]
+      DstBlock		      "Rate Transition"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Rate Transition"
+      SrcPort		      1
+      DstBlock		      "SOFB Controller"
       DstPort		      1
     }
     Line {
@@ -872,25 +874,9 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Sum"
+      SrcBlock		      "FOFB Controller"
       SrcPort		      1
-      Points		      [40, 0]
-      Branch {
-	Points			[0, 70]
-	DstBlock		"FOFB Controller"
-	DstPort			1
-      }
-      Branch {
-	Points			[0, -30]
-	DstBlock		"Rate Transition"
-	DstPort			1
-      }
-    }
-    Line {
-      Labels		      [0, 0]
-      SrcBlock		      "Rate Transition"
-      SrcPort		      1
-      DstBlock		      "SOFB Controller"
+      DstBlock		      "control_fofb"
       DstPort		      1
     }
   }

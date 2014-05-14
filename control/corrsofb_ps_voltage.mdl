@@ -1,5 +1,5 @@
 Model {
-  Name			  "sloworbcorr_ps_voltage"
+  Name			  "corrsofb_ps_voltage"
   Version		  7.8
   MdlSubVersion		  0
   GraphicalInterface {
@@ -27,7 +27,7 @@ Model {
       Name		      "output_voltage"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.14"
+    ComputedModelVersion    "1.18"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -48,9 +48,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 13 10:16:48 2014"
-  RTWModifiedTimeStamp	  321877005
-  ModelVersionFormat	  "1.%<AutoIncrement:14>"
+  LastModifiedDate	  "Tue May 13 20:58:20 2014"
+  RTWModifiedTimeStamp	  321913843
+  ModelVersionFormat	  "1.%<AutoIncrement:18>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -299,7 +299,7 @@ Model {
 	  MaxConsecutiveZCsMsg	  "error"
 	  MaskedZcDiagnostic	  "warning"
 	  IgnoredZcDiagnostic	  "warning"
-	  SolverPrmCheckMsg	  "warning"
+	  SolverPrmCheckMsg	  "none"
 	  InheritedTsInSrcMsg	  "warning"
 	  DiscreteInheritContinuousMsg "warning"
 	  MultiTaskDSMMsg	  "error"
@@ -630,8 +630,8 @@ Model {
 	PropName		"Components"
       }
       Name		      "Configuration"
-      CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 400, 210, 1280, 840 ] 
+      CurrentDlgPage	      "Diagnostics"
+      ConfigPrmDlgPosition     [ 390, 200, 1290, 878 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -718,17 +718,6 @@ Model {
       InitialOutput	      "[]"
     }
     Block {
-      BlockType		      StateSpace
-      A			      "1"
-      B			      "1"
-      C			      "1"
-      D			      "1"
-      X0		      "0"
-      AbsoluteTolerance	      "auto"
-      ContinuousStateAttributes	"''"
-      Realization	      "auto"
-    }
-    Block {
       BlockType		      Sum
       IconShape		      "rectangular"
       Inputs		      "++"
@@ -749,8 +738,8 @@ Model {
     }
   }
   System {
-    Name		    "sloworbcorr_ps_voltage"
-    Location		    [75, 173, 512, 400]
+    Name		    "corrsofb_ps_voltage"
+    Location		    [76, 258, 551, 485]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -764,7 +753,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "21"
+    SIDHighWatermark	    "22"
     Block {
       BlockType		      Inport
       Name		      "setpoints"
@@ -815,15 +804,17 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
-      BlockType		      StateSpace
+      BlockType		      Reference
       Name		      "Output Filters"
-      SID		      "12"
-      Position		      [270, 68, 330, 102]
-      ZOrder		      -8
-      A			      "corrsofbpsfilter.a"
-      B			      "corrsofbpsfilter.b"
-      C			      "corrsofbpsfilter.c"
-      D			      "corrsofbpsfilter.d"
+      SID		      "22"
+      Ports		      [1, 1]
+      Position		      [255, 67, 350, 103]
+      ZOrder		      -1
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "corrsofbpsfilter.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      Sum
@@ -857,7 +848,7 @@ Model {
       BlockType		      Outport
       Name		      "output_voltage"
       SID		      "19"
-      Position		      [365, 78, 395, 92]
+      Position		      [390, 78, 420, 92]
       IconDisplay	      "Port number"
     }
     Line {
