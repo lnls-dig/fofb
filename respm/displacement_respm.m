@@ -1,28 +1,25 @@
-function [Mx, My] = displacement_respm(THERING, orbit, indexes)
+function M = displacement_respm(THERING, orbit_points, indexes, plane)
 
 delta_mis = 1e-6;
 
-n_orbit_points = length(orbit);
+n_orbit_points = length(orbit_points);
 n_elements = size(indexes,1);
 
-Mx = zeros(n_orbit_points, n_elements, 4);
-My = zeros(n_orbit_points, n_elements, 4);
+M = zeros(n_orbit_points, n_elements, 4);
 
 TR0 = THERING;
 for i=1:n_elements
+    if strcmpi(plane{i}, 'h')
+        lnls_set_misalignment = @lnls_set_misalignmentX;
+    else
+        lnls_set_misalignment = @lnls_set_misalignmentY;
+    end
     idx = indexes(i,:);
     
     THERING = TR0;
-    THERING = lnls_set_misalignmentX(ones(size(idx))*delta_mis/2, idx, THERING);
-    orbit1 = findorbit4(THERING, 0, orbit);
-    THERING = lnls_set_misalignmentX(-ones(size(idx))*delta_mis/2, idx, THERING);
-    orbit2 = findorbit4(THERING, 0, orbit);
-    Mx(:,i,:) = (orbit2-orbit1)'/delta_mis;
-    
-    THERING = TR0;
-    THERING = lnls_set_misalignmentY(ones(size(idx))*delta_mis/2, idx, THERING);
-    orbit1 = findorbit4(THERING, 0, orbit);
-    THERING = lnls_set_misalignmentY(-ones(size(idx))*delta_mis/2, idx, THERING);
-    orbit2 = findorbit4(THERING, 0, orbit);
-    My(:,i,:) = (orbit2-orbit1)'/delta_mis;
+    THERING = lnls_set_misalignment(ones(size(idx))*delta_mis/2, idx, THERING);
+    orbit1 = findorbit4(THERING, 0, orbit_points);
+    THERING = lnls_set_misalignment(-ones(size(idx))*delta_mis/2, idx, THERING);
+    orbit2 = findorbit4(THERING, 0, orbit_points);
+    M(:,i,:) = (orbit2-orbit1)'/delta_mis;
 end
