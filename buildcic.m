@@ -15,8 +15,9 @@ ndecim = nstages*ndelays;
 if strcmpi(method, 'freqz')
     [h,w] = freqz(cic_coeff, [1 zeros(1,n-1)], density*ceil(n/decfactor)*decfactor);
 
-    h = h(1:n/decfactor*density-1);
-    w = linspace(0,pi,density*n/decfactor);
+    npts = round(n/decfactor*density);
+    h = h(1:npts-1);
+    w = linspace(0,pi,npts);
     w = w(1:end-1);
 
     num =invfreqz(h,w,ndecim,0);
