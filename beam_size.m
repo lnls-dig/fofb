@@ -1,9 +1,8 @@
 if ~exist('THERING','var')
-global THERING;
-sirius;
-setoperationalmode(1);
+    global THERING;
+    sirius;
+    setoperationalmode(1);
 end
-
 
 %%
 coupling = 1/100;
