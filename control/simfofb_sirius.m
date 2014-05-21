@@ -6,10 +6,12 @@ respmat = M(:,ceil((end+1)/2):end,3);
 distmat = Mdq(:,:,3);
 
 % Matrices
-nbpm = size(respmat,1);
+norbit = size(respmat,1);
 ncorr = size(respmat,2);
 ndist = size(distmat,2);
 corrmat = pinv(respmat);
+
+nbpm = norbit;
 
 % Beam dynamics MIMO model
 param.beam.sys = ss([],[],[],respmat);
@@ -63,10 +65,10 @@ param.netdelay.corrsofb = 103e-6;
 %%%%%%%%%%%%
 ncorrsofb = 1;
 ncorrfofb = size(param.fofbctrl.sys.d, 1);
-param.corrselectsofb = 1;
+param.corrsofbselect = 1;
 param.ncorr = 1;
 param.corrordering = 1+(1:ncorr);
-
+param.bpmselect = 1:nbpm;
 
 % Build simulation vectors
 t = (0:1e-6:0.1)';

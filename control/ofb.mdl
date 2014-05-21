@@ -32,11 +32,16 @@ Model {
       BusObject		      ""
       Name		      "corrsofb_power_noise"
     }
-    NumRootOutports	    5
+    NumRootOutports	    6
     Outport {
       BusObject		      ""
       BusOutputAsStruct	      "off"
       Name		      "beam_orbit"
+    }
+    Outport {
+      BusObject		      ""
+      BusOutputAsStruct	      "off"
+      Name		      "beam_orbit_bpm"
     }
     Outport {
       BusObject		      ""
@@ -59,7 +64,7 @@ Model {
       Name		      "corr_currents"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.181"
+    ComputedModelVersion    "1.185"
     NumModelReferences	    2
     ModelReference {
       ModelRefBlockPath	      "ofb/Controllers|ofbctrl"
@@ -86,9 +91,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 13 21:11:07 2014"
-  RTWModifiedTimeStamp	  321915559
-  ModelVersionFormat	  "1.%<AutoIncrement:181>"
+  LastModifiedDate	  "Fri May 16 17:02:11 2014"
+  RTWModifiedTimeStamp	  321992764
+  ModelVersionFormat	  "1.%<AutoIncrement:185>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -809,7 +814,7 @@ Model {
   }
   System {
     Name		    "ofb"
-    Location		    [66, 348, 1618, 817]
+    Location		    [67, 377, 1619, 889]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -823,7 +828,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "232"
+    SIDHighWatermark	    "234"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
@@ -897,6 +902,20 @@ Model {
       Port		      "7"
       IconDisplay	      "Port number"
       PortDimensions	      "ncorrsofb"
+    }
+    Block {
+      BlockType		      Reference
+      Name		      "BPMs"
+      SID		      "222"
+      Ports		      [1, 1]
+      Position		      [505, 392, 600, 428]
+      ZOrder		      -1
+      BlockMirror	      on
+      LibraryVersion	      "1.108"
+      SourceBlock	      "cstblocks/LTI System"
+      SourceType	      "LTI Block"
+      sys		      "bpm.sys"
+      IC		      "[]"
     }
     Block {
       BlockType		      Reference
@@ -1016,20 +1035,6 @@ Model {
       NamePlacement	      "alternate"
       DelayTime		      "fracnetdelay.corrsofb"
       TransDelayFeedthrough   on
-    }
-    Block {
-      BlockType		      Reference
-      Name		      "LTI System"
-      SID		      "222"
-      Ports		      [1, 1]
-      Position		      [505, 392, 600, 428]
-      ZOrder		      -1
-      BlockMirror	      on
-      LibraryVersion	      "1.108"
-      SourceBlock	      "cstblocks/LTI System"
-      SourceType	      "LTI Block"
-      sys		      "bpm.sys"
-      IC		      "[]"
     }
     Block {
       BlockType		      Reference
@@ -1202,6 +1207,20 @@ Model {
     }
     Block {
       BlockType		      Selector
+      Name		      "select bpm"
+      SID		      "233"
+      Ports		      [1, 1]
+      Position		      [1285, 396, 1325, 424]
+      ZOrder		      -17
+      BlockMirror	      on
+      ShowName		      off
+      InputPortWidth	      "norbit"
+      IndexOptions	      "Index vector (dialog)"
+      Indices		      "bpmselect"
+      OutputSizes	      "1"
+    }
+    Block {
+      BlockType		      Selector
       Name		      "select slow orbit correctors"
       SID		      "171"
       Ports		      [1, 1]
@@ -1211,7 +1230,7 @@ Model {
       ShowName		      off
       InputPortWidth	      "ncorr"
       IndexOptions	      "Index vector (dialog)"
-      Indices		      "corrselectsofb"
+      Indices		      "corrsofbselect"
       OutputSizes	      "1"
     }
     Block {
@@ -1238,12 +1257,23 @@ Model {
     }
     Block {
       BlockType		      Outport
+      Name		      "beam_orbit_bpm"
+      SID		      "234"
+      Position		      [333, 445, 347, 475]
+      ZOrder		      -9
+      BlockRotation	      270
+      BlockMirror	      on
+      Port		      "2"
+      IconDisplay	      "Port number"
+    }
+    Block {
+      BlockType		      Outport
       Name		      "control_sofb"
       SID		      "107"
       Position		      [473, 25, 487, 55]
       ZOrder		      -9
       BlockRotation	      270
-      Port		      "2"
+      Port		      "3"
       IconDisplay	      "Port number"
     }
     Block {
@@ -1254,7 +1284,7 @@ Model {
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
-      Port		      "3"
+      Port		      "4"
       IconDisplay	      "Port number"
     }
     Block {
@@ -1265,7 +1295,7 @@ Model {
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
-      Port		      "4"
+      Port		      "5"
       IconDisplay	      "Port number"
     }
     Block {
@@ -1276,7 +1306,7 @@ Model {
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
-      Port		      "5"
+      Port		      "6"
       IconDisplay	      "Port number"
     }
     Line {
@@ -1321,7 +1351,7 @@ Model {
       }
       Branch {
 	Points			[0, 190]
-	DstBlock		"Fine Network Delay\n(BPMs)"
+	DstBlock		"select bpm"
 	DstPort			1
       }
     }
@@ -1346,7 +1376,7 @@ Model {
     Line {
       SrcBlock		      "Sum3"
       SrcPort		      1
-      DstBlock		      "LTI System"
+      DstBlock		      "BPMs"
       DstPort		      1
     }
     Line {
@@ -1474,11 +1504,18 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "LTI System"
+      SrcBlock		      "BPMs"
       SrcPort		      1
-      Points		      [-445, 0; 0, -150]
-      DstBlock		      "Controllers"
-      DstPort		      2
+      Points		      [-160, 0]
+      Branch {
+	Points			[-285, 0; 0, -150]
+	DstBlock		"Controllers"
+	DstPort			2
+      }
+      Branch {
+	DstBlock		"beam_orbit_bpm"
+	DstPort			1
+      }
     }
     Line {
       SrcBlock		      "Zero-Order\nHold (SOFB)"
@@ -1491,6 +1528,12 @@ Model {
       SrcPort		      1
       DstBlock		      "Sum2"
       DstPort		      2
+    }
+    Line {
+      SrcBlock		      "select bpm"
+      SrcPort		      1
+      DstBlock		      "Fine Network Delay\n(BPMs)"
+      DstPort		      1
     }
   }
 }

@@ -61,7 +61,8 @@ if size(respmat, 1) ~= size(distmat, 1)
 end
 
 % Extract number of BPMs, orbit correctors and sources of disturbance
-nbpm = size(respmat, 1);
+norbit = size(respmat, 1);
+nbpm = size(fofbctrl.sys.d, 2);
 ncorr = size(respmat, 2);
 ncorrfofb = size(fofbctrl.sys.d, 1);
 ncorrsofb = size(sofbctrl.sys.d, 1);
@@ -99,9 +100,9 @@ fracnetdelay.corrsofb = repmat(rem(netdelay.corrsofb, sofbctrl.sys.Ts), 1, ncorr
 [a,b,c,d] = repss(a,b,c,d,nbpm);
 bpm.sys = ss(a,b,c,d, fofbctrl.sys.Ts);
 delay = floor(fracnetdelay.bpm/fofbctrl.sys.Ts);
-%if delay > 0
-    bpm.sys.OutputDelay = 1+0*delay;
-%end
+if delay > 0
+    bpm.sys.OutputDelay = delay;
+end
 
 % Slow corrector power supply output filter MIMO model
 [a,b,c,d] = tf2ss(corrsofbpsfilter.num, corrsofbpsfilter.den);
@@ -169,14 +170,16 @@ assignin('base', 'corrmagnetgain', corrmagnetgain);
 assignin('base', 'corrmagnet', corrmagnet);
 assignin('base', 'vacchamb', vacchamb);
 assignin('base', 'fracnetdelay', fracnetdelay);
-assignin('base', 'nbpm', nbpm);
+assignin('base', 'norbit', norbit);
 assignin('base', 'ndist', ndist);
+assignin('base', 'nbpm', nbpm);
 assignin('base', 'ncorr', ncorr);
 assignin('base', 'ncorrsofb', ncorrsofb);
 assignin('base', 'ncorrfofb', ncorrfofb);
 assignin('base', 'simvectors', simvectors);
-assignin('base', 'corrselectsofb', param.corrselectsofb);
+assignin('base', 'corrsofbselect', param.corrsofbselect);
 assignin('base', 'corrordering', param.corrordering);
+assignin('base', 'bpmselect', param.bpmselect);
 
 % Run Simulink simulation
 simout_simulink = sim(modelname, 'StopTime', num2str(simvectors.t(end)));
