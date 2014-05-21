@@ -7,9 +7,11 @@ if ischar(filenames)
     try
         fileid = fopen(filenames);
         period = fread(fileid,1,'uint32','l');
-        header_bpm = strread(fgetl(fileid), '%s', 'delimiter', '\t');
+        header_bpm = textscan(fgetl(fileid), '%s', 'delimiter', '\t');
+        header_bpm = header_bpm{1};
         length_bpm = length(header_bpm);
-        header_ps = strread(fgetl(fileid), '%s', 'delimiter', '\t');
+        header_ps = textscan(fgetl(fileid), '%s', 'delimiter', '\t');
+        header_ps = header_ps{1};
         length_ps = length(header_ps);
 
         data = [];
@@ -19,7 +21,8 @@ if ischar(filenames)
             if isempty(ncols*nrows)
                 break;
             end
-            subdata = fread(fileid, ncols*nrows, 'double', 'l');
+            subdata = single(fread(fileid, ncols*nrows, 'double', 'l')); % FIXME: remove single() in the future, when data is already encoded in single precision
+            %subdata = fread(fileid, ncols*nrows, 'double', 'l');
             data = [data; reshape(subdata, ncols, nrows)'];
         end
 
