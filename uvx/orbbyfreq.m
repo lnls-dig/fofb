@@ -1,14 +1,14 @@
-function [orb, orb_envelope, f] = fofb_orb_by_freq(fa_data, f)
-% [orb, orb_envelope, f] = fofb_orb_by_freq(fa_data, f)
+function [orb, orb_envelope, f] = orbbyfreq(fadata, f)
+% [orb, orb_envelope, f] = fofb_orb_by_freq(fadata, f)
 
-fft_result = fft(fa_data.bpm_readings);
-[npts, n_bpms] = size(fa_data.bpm_readings);
+fft_result = fft(fadata.bpm_readings);
+[npts, n_bpms] = size(fadata.bpm_readings);
 
 bpm_position_fft_phase = angle(fft_result);
 bpm_position_fft_mag = 2/npts*abs(fft_result);
 
 % Calculate sampling frequency and convert to Hz
-Fs = 1e9/double(mean(diff(fa_data.time)));
+Fs = 1e9/double(mean(diff(fadata.time)));
 freq = linspace(0, Fs, npts+1);
 freq = freq(1:end-1);
 

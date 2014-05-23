@@ -1,7 +1,7 @@
-function fa_data = faloaddata(filenames)
+function fadata = faloaddata(filenames)
 %
 % FALOADDATA Loads acquisition data from file.
-% fa_data = faloaddata(filename)
+% fadata = faloaddata(filenames)
 
 if ischar(filenames)
     try
@@ -36,7 +36,7 @@ if ischar(filenames)
 
     fclose(fileid);
 
-    fa_data = struct('time', time, ...
+    fadata = struct('time', time, ...
                'bpm_readings', data(:,1:length_bpm), ...
                'bpm_names', {header_bpm(1:end)}, ...
                'ps_readings', data(:,length_bpm+1:length_bpm+length_ps/2), ...
@@ -46,7 +46,7 @@ if ischar(filenames)
                'period', period);
 
 elseif iscell(filenames)
-    fa_data = struct('time', [], ...
+    fadata = struct('time', [], ...
            'bpm_readings', [], ...
            'bpm_names', [], ...
            'ps_readings', [], ...
@@ -56,17 +56,17 @@ elseif iscell(filenames)
            'period', []);
 
     for i=1:length(filenames)
-        sub_fa_data = faloaddata(filenames{i});
+        sub_fadata = faloaddata(filenames{i});
         
-        fa_data.time         = [fa_data.time;         sub_fa_data.time];
-        fa_data.bpm_readings = [fa_data.bpm_readings; sub_fa_data.bpm_readings];
-        fa_data.ps_readings  = [fa_data.ps_readings;  sub_fa_data.ps_readings];
-        fa_data.ps_setpoints = [fa_data.ps_setpoints; sub_fa_data.ps_setpoints];
+        fadata.time         = [fadata.time;         sub_fadata.time];
+        fadata.bpm_readings = [fadata.bpm_readings; sub_fadata.bpm_readings];
+        fadata.ps_readings  = [fadata.ps_readings;  sub_fadata.ps_readings];
+        fadata.ps_setpoints = [fadata.ps_setpoints; sub_fadata.ps_setpoints];
         
-        fa_data.bpm_names = compare(fa_data.bpm_names, sub_fa_data.bpm_names);
-        fa_data.ps_names = compare(fa_data.ps_names, sub_fa_data.ps_names);
-        fa_data.ps_setpoints_names = compare(fa_data.ps_setpoints_names, sub_fa_data.ps_setpoints_names);
-        fa_data.period = compare(fa_data.period, sub_fa_data.period);
+        fadata.bpm_names = compare(fadata.bpm_names, sub_fadata.bpm_names);
+        fadata.ps_names = compare(fadata.ps_names, sub_fadata.ps_names);
+        fadata.ps_setpoints_names = compare(fadata.ps_setpoints_names, sub_fadata.ps_setpoints_names);
+        fadata.period = compare(fadata.period, sub_fadata.period);
     end
 end
 

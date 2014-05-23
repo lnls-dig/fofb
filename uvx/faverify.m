@@ -6,12 +6,12 @@ for i=1:length(filenames)
     [pathstr, filename, ext] = fileparts(filenames{i}) ;
     
     if strcmpi(ext, '.dat') && ~strcmpi(filename, 'temp')
-        fa_data = faloaddata(filenames{i});
-        t = [tlast; fa_data.time];
+        fadata = faloaddata(filenames{i});
+        t = [tlast; fadata.time];
         dt = diff(t);
-        tlast = fa_data.time(end);
+        tlast = fadata.time(end);
 
-        failed = dt > fa_data.period*1e3*1.5;
+        failed = dt > fadata.period*1e3*1.5;
         if any(failed)
             r(j).filename = filenames{i};
             r(j).failed_transition = (failed(1) == 1);
