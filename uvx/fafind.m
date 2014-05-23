@@ -1,4 +1,4 @@
-function r = fafinddata(path, date_start, date_stop)
+function r = fafind(path, date_start, date_stop)
 
 if nargin < 1 || isempty(path)
     path = pwd;
