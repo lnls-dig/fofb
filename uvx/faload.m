@@ -1,7 +1,7 @@
-function fadata = faloaddata(filenames)
+function fadata = faload(filenames)
 %
-% FALOADDATA Loads acquisition data from file.
-% fadata = faloaddata(filenames)
+% FALOAD Loads acquisition data from file.
+% fadata = faload(filenames)
 
 if ischar(filenames)
     try
@@ -56,7 +56,7 @@ elseif iscell(filenames)
            'period', []);
 
     for i=1:length(filenames)
-        sub_fadata = faloaddata(filenames{i});
+        sub_fadata = faload(filenames{i});
         
         fadata.time         = [fadata.time;         sub_fadata.time];
         fadata.bpm_readings = [fadata.bpm_readings; sub_fadata.bpm_readings];

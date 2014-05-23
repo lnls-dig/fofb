@@ -6,7 +6,7 @@ for i=1:length(filenames)
     [pathstr, filename, ext] = fileparts(filenames{i}) ;
     
     if strcmpi(ext, '.dat') && ~strcmpi(filename, 'temp')
-        fadata = faloaddata(filenames{i});
+        fadata = faload(filenames{i});
         t = [tlast; fadata.time];
         dt = diff(t);
         tlast = fadata.time(end);
