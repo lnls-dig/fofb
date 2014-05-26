@@ -7,27 +7,38 @@ if ischar(filenames)
     try
         fileid = fopen(filenames);
         period = fread(fileid,1,'uint32','l');
-        header_bpm = textscan(fgetl(fileid), '%s', 'delimiter', '\t');
-        header_bpm = header_bpm{1};
+        
+        header_bpm = fgetl(fileid);
+        if ~isempty(header_bpm)
+            header_bpm = textscan(header_bpm, '%s', 'delimiter', '\t');
+            header_bpm = header_bpm{1};
+        else
+            header_bpm = {};
+        end        
         length_bpm = length(header_bpm);
-        header_ps = textscan(fgetl(fileid), '%s', 'delimiter', '\t');
-        header_ps = header_ps{1};
-        length_ps = length(header_ps);
-
-        data = [];
-        while true
-            nrows = fread(fileid,1, 'uint32=>double', 'l');
-            ncols = fread(fileid,1, 'uint32=>double', 'l');
-            if isempty(ncols*nrows)
-                break;
-            end
-            subdata = single(fread(fileid, ncols*nrows, 'double', 'l')); % FIXME: remove single() in the future, when data is already encoded in single precision
-            %subdata = fread(fileid, ncols*nrows, 'double', 'l');
-            data = [data; reshape(subdata, ncols, nrows)'];
+        
+        header_ps = fgetl(fileid);
+        if ~isempty(header_ps)
+            header_ps = textscan(header_ps, '%s', 'delimiter', '\t');
+            header_ps = header_ps{1};
+        else
+            header_ps = {};
         end
+        length_ps = length(header_ps);
+        
+        nvars = fread(fileid,1, 'uint32', 'l');
 
-        time = typecast(data(:,end), 'uint64');
-        data = data(:, 1:end-1);
+        fileinfo = dir(filenames);
+        nrows = (fileinfo.bytes-ftell(fileid))/4/(nvars+2);
+        
+        data = fread(fileid, nrows*(nvars+2), 'single=>single', 'l');
+        data = reshape(data, nvars+2, nrows)';
+
+        time_hi = typecast(data(:,end), 'uint32');
+        time_lo = typecast(data(:,end-1), 'uint32');
+        time = bitor(bitshift(uint64(time_hi), 32), uint64(time_lo));
+                
+        data = data(:, 1:end-2);
 
     catch err
         fclose(fileid);
@@ -56,17 +67,17 @@ elseif iscell(filenames)
            'period', []);
 
     for i=1:length(filenames)
-        sub_fadata = faload(filenames{i});
+        subfadata = faload(filenames{i});
         
-        fadata.time         = [fadata.time;         sub_fadata.time];
-        fadata.bpm_readings = [fadata.bpm_readings; sub_fadata.bpm_readings];
-        fadata.ps_readings  = [fadata.ps_readings;  sub_fadata.ps_readings];
-        fadata.ps_setpoints = [fadata.ps_setpoints; sub_fadata.ps_setpoints];
+        fadata.time         = [fadata.time;         subfadata.time];
+        fadata.bpm_readings = [fadata.bpm_readings; subfadata.bpm_readings];
+        fadata.ps_readings  = [fadata.ps_readings;  subfadata.ps_readings];
+        fadata.ps_setpoints = [fadata.ps_setpoints; subfadata.ps_setpoints];
         
-        fadata.bpm_names = compare(fadata.bpm_names, sub_fadata.bpm_names);
-        fadata.ps_names = compare(fadata.ps_names, sub_fadata.ps_names);
-        fadata.ps_setpoints_names = compare(fadata.ps_setpoints_names, sub_fadata.ps_setpoints_names);
-        fadata.period = compare(fadata.period, sub_fadata.period);
+        fadata.bpm_names = compare(fadata.bpm_names, subfadata.bpm_names);
+        fadata.ps_names = compare(fadata.ps_names, subfadata.ps_names);
+        fadata.ps_setpoints_names = compare(fadata.ps_setpoints_names, subfadata.ps_setpoints_names);
+        fadata.period = compare(fadata.period, subfadata.period);
     end
 end
 
