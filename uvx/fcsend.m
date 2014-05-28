@@ -1,4 +1,4 @@
-function fastcommand(ip_address, data, packetsize, pauseperiod, ip_port)
+function fcsend(ip_address, data, packetsize, pauseperiod, ip_port)
 
 if nargin < 3 || isempty(packetsize)
     packetsize = 1000;
@@ -9,7 +9,7 @@ if nargin < 4 || isempty(pauseperiod)
 end
 
 if nargin < 5 || isempty(ip_port)
-    ip_port = 4007;
+    ip_port = 3604;
 end
 
 [npts, ncols] = size(data);
