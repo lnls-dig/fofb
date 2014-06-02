@@ -5,5 +5,3 @@ date_stop  = '2014/5/9 9:00:00';
 filenames = fafind(path, date_start, date_stop)
 
 fa_data_9_p1 = faload(filenames)
-
-%plot_bpm_ps(fa_data);

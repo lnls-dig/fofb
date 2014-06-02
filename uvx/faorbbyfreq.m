@@ -1,4 +1,4 @@
-function [orb, orb_envelope, f] = orbbyfreq(fadata, f)
+function [orb, orb_envelope, f] = faorbbyfreq(fadata, f)
 % [orb, orb_envelope, f] = fofb_orb_by_freq(fadata, f)
 
 fft_result = fft(fadata.bpm_readings);

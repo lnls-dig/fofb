@@ -1,42 +1,53 @@
-function fcsend(ip_address, data, packetsize, pauseperiod, ip_port)
+function fcsend(ip_address, fcn, npts_packet, ip_port, stopat)
 
-if nargin < 3 || isempty(packetsize)
-    packetsize = 1000;
+if nargin < 3 || isempty(npts_packet)
+    npts_packet = 1000;
 end
 
-if nargin < 4 || isempty(pauseperiod)
-    pauseperiod = 0.01;
-end
-
-if nargin < 5 || isempty(ip_port)
+if nargin < 4 || isempty(ip_port)
     ip_port = 3604;
 end
 
-[npts, ncols] = size(data);
-npackets = ceil(npts/packetsize);
+if nargin < 5 || isempty(stopat)
+    stopat = npts_packet*100;
+end
 
-conn = tcpip(ip_address, ip_port, 'OutputBufferSize', 10*packetsize*ncols*4);
+nvars = fcn('size');
+
+i=0;
+failure = false;
+
+conn = tcpip(ip_address, ip_port, 'OutputBufferSize', 10*npts_packet*(nvars+1)*4);
 fopen(conn);
-i=1;
-while i<=npackets
-    try
-        if fread(conn, 1, 'uint8')
-            if i == npackets
-                subdata = data(((npackets-1)*packetsize+1):end, :);
-            else
-                subdata = data((1:packetsize) + (i-1)*packetsize, :);
+while i < stopat
+    [subdata, fcmode] = fcn(i, npts_packet);
+
+    % Ensure data is encoded in 4-byte floating point representation
+    subdata = single(subdata);
+
+    while true
+        try
+            if fread(conn, 1, 'uint8')
+                subdata = [subdata repmat(typecast(fcmode, 'single'), npts_packet, 1)];
+                subdatat = subdata';
+                subdatainfo = whos('subdatat');
+
+                fwrite(conn, subdatainfo.bytes+8, 'uint32');
+                fwrite(conn, uint32(size(subdata)), 'uint32');
+                fwrite(conn, subdatat(1:end), 'single');
+
+                i=i+1;
+                break
             end
-            subdatainfo = whos('subdata');
-            subdatat = subdata';
-            fwrite(conn, subdatainfo.bytes+8, 'uint32');
-            fwrite(conn, uint32(size(subdata)), 'uint32');
-            fwrite(conn, subdatat(1:end), 'single');
-            i=i+1;
+        catch
+            failure = true;
+            break
         end
-    catch
-        fclose(conn);
+        pause(0.001);
+    end
+
+    if failure
         break
     end
-    pause(pauseperiod);
 end
 fclose(conn);

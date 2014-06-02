@@ -62,7 +62,7 @@ for i = 1:ny
         set(haxis(i), 'YScale', 'linear');
     end
     axis([xrange yzrange])
-    xlabel(xlabeltext, 'FontSize', 14, 'FontWeight', 'bold');    
+    xlabel(xlabeltext, 'FontSize', 14, 'FontWeight', 'bold');
     ylabel(yzlabeltext, 'FontSize', 14, 'FontWeight', 'bold');
     set(haxis(i), 'FontSize', 14);
     if ~isempty(yz)

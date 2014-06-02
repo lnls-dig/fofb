@@ -35,7 +35,7 @@ for i=1:length(filenames)
     [pathstr, filename, ext] = fileparts(filenames{i});
 
     filename_num = str2double(filename);
-    
+
     if strcmpi(ext, '.dat') && ~strcmpi(filename, 'temp') && ~isempty(filename_num) && (filename_num >= tstart) && (filename_num <= tstop)
         r{j} = fullfile(path, filenames{i});
         j = j+1;

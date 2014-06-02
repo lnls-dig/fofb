@@ -4,7 +4,7 @@ tlast = [];
 j = 1;
 for i=1:length(filenames)
     [pathstr, filename, ext] = fileparts(filenames{i}) ;
-    
+
     if strcmpi(ext, '.dat') && ~strcmpi(filename, 'temp')
         fadata = faload(filenames{i});
         t = [tlast; fadata.time];
