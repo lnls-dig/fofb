@@ -254,14 +254,14 @@ end
 
 function pop_bpm_Callback(hObject, eventdata, handles)
 
-selected_bpms = get(handles.pop_bpm, 'Value');
+selected_bpm = get(handles.pop_bpm, 'Value');
 
-if selected_bpms == 1
+if selected_bpm == 1
     % All BPMs selected
     show_results_pos(handles);
 else
     % One BPM selected
-    show_results_pos(handles,selected_bpms-1);
+    show_results_pos(handles,selected_bpm-1);
 end
 
 
