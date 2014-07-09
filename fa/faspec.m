@@ -8,7 +8,7 @@ Fs = 1/mean(double(diff(time)));
 % horizontal and vertical BPM readings)
 nbpm = size(data.bpm_readings,2)/2;
 
-if (nargin < 5) || isempty(selected_bpm)
+if (nargin < 3) || isempty(selected_bpm)
     selected_bpm = 1:nbpm;
 end
 
@@ -54,8 +54,6 @@ if (nargin < 8) || isempty(haxis)
         set(fig, 'Name', [selected_bpm_names{2*i-1} ' - ' selected_bpm_names{2*i}], 'NumberTitle', 'off');
         set(fig, 'WindowStyle', 'docked');
     end
-else
-    haxis = [];
 end
 
 if (nargin < 9)
