@@ -47,7 +47,7 @@ beam = param.beam;
 distbeam = param.distbeam;
 bpm = param.bpm;
 fofbctrl = param.fofbctrl;
-corrmagnet = param.corrmagnet;
+corrmagnet_current = param.corrmagnet_current;
 corrmagnetgain = param.corrmagnetgain;
 vacchamb = param.vacchamb;
 netdelay = param.netdelay;
@@ -57,7 +57,7 @@ Ts = param.Ts;
 
 % Check if all matrix dimensions are correct
 if size(respmat, 1) ~= size(distmat, 1)
-    error('distmat must have the same number of rows as tpsctrl.Ts = psctrl.Ts;he number of rows of respmat (number of beam position readings).');
+    error('distmat must have the same number of rows as the number of rows of respmat (number of beam position readings).');
 end
 
 % Dimensions
@@ -111,17 +111,17 @@ save_system(modelname);
 % end
 
 % BPM MIMO model
-if length(bpm) == 1
+if all(size(bpm) == 1)
     bpm = siso2mimo(bpm, nbpm);
 end
 
-% Corrector magnets MIMO model
-if length(corrmagnet) == 1
-    corrmagnet = siso2mimo(corrmagnet, ncorr);
+% Corrector magnets current MIMO model
+if all(size(corrmagnet_current) == 1)
+    corrmagnet_current = siso2mimo(corrmagnet_current, ncorr);
 end
 
 % Vacuum chamber MIMO model
-if length(vacchamb) == 1
+if all(size(vacchamb) == 1)
     vacchamb = siso2mimo(vacchamb, ncorr);
 end
 
@@ -145,7 +145,7 @@ assignin('base', 'distbeam', distbeam);
 assignin('base', 'fofbctrl', fofbctrl);
 assignin('base', 'bpm', bpm);
 assignin('base', 'corrmagnetgain', corrmagnetgain);
-assignin('base', 'corrmagnet', corrmagnet);
+assignin('base', 'corrmagnet_current', corrmagnet_current);
 assignin('base', 'vacchamb', vacchamb);
 assignin('base', 'delay', delay);
 assignin('base', 'fracdelay', fracdelay);

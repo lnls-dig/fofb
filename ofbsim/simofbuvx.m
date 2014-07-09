@@ -2,8 +2,8 @@ function simout = simofbuvx
 
 % Response matrices
 load matrix_lnls1.mat
-respmat = Mh_meas;
-distmat = Mdisth_teor;
+respmat =  Mv_meas;
+distmat =  ones(25,1); Mdisth_teor;
 
 % Sampling period
 Ts = 320e-6;
@@ -25,6 +25,8 @@ param.distbeam = ss([],[],[],distmat);
 corrmat = pinv(respmat);
 num = 0.05*[1 0];
 den = [1 -1];
+%num = [1.12007392895013 -1.48080307715986 0.462362520083246];
+%den = [1 -1 0];
 [a,b,c,d] = tf2ss(num, den);
 [a,b,c,d] = repss(a,b,c,d,ncorrfofb);
 param.fofbctrl = ss(a, b*corrmat, c, d*corrmat, -1);
@@ -34,17 +36,24 @@ param.fofbctrl = ss(a, b*corrmat, c, d*corrmat, -1);
 param.bpm = tf(num, den, -1);
 
 % Corrector magnet current model
-corrmagnet_L = 0.4e-3;
-corrmagnet_R = 1;
-[num, den] = build1order(corrmagnet_L/corrmagnet_R);
-param.corrmagnet = tf(num, den);
+param.corrmagnet_current = corrmagnetv(1,1);
+param.corrmagnet_current.inputdelay = 0;
 
 % Corrector magnet current/magnetic field gain
 param.corrmagnetgain = ones(ncorrfofb,1);
 
+% % Corrector magnet core
+% corrmagnet_core = zpk(-1094,[-991.1 -9005],8162.1842);
+% param.corrmagnet_core = corrmagnet_core;
+
+%8162.1842 (s+1094)
+%------------------
+%(s+991.1) (s+9005)
+
 % Vacuum chamber model
-[num, den] = build1order(1/1.25e3/2/pi);
-param.vacchamb = tf(num, den);
+[num, den] = build1order(1/2.5e3/2/pi);
+vacchamb = tf(num, den);
+param.vacchamb = vacchamb;
 
 % Communication network delays
 param.netdelay.bpm = Ts;
@@ -54,7 +63,7 @@ param.netdelay.corrfofb = Ts;
 param.bpmordering = 1:nbpm;
 
 % Simulation vectors
-t = (0:10e-6:Ts*1000)';
+t = (0:32e-6:Ts*10000)';
 npts = length(t);
 param.simvectors.t = t;
 param.simvectors.reference_orbit = zeros(npts,nbpm);

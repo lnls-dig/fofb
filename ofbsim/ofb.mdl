@@ -64,7 +64,7 @@ Model {
       Name		      "corr_currents"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.276"
+    ComputedModelVersion    "1.283"
     NumModelReferences	    1
     ModelReference {
       ModelRefBlockPath	      "ofb/SOFB|sofb_bypass"
@@ -88,9 +88,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "danielot"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Sun Jun 08 18:06:38 2014"
-  RTWModifiedTimeStamp	  324151511
-  ModelVersionFormat	  "1.%<AutoIncrement:276>"
+  LastModifiedDate	  "Tue Jun 17 12:26:21 2014"
+  RTWModifiedTimeStamp	  324908608
+  ModelVersionFormat	  "1.%<AutoIncrement:283>"
   ConfigurationManager	  "None"
   SampleTimeColors	  on
   SampleTimeAnnotations	  off
@@ -672,7 +672,7 @@ Model {
       }
       Name		      "Configuration"
       CurrentDlgPage	      "Data Import//Export"
-      ConfigPrmDlgPosition     [ 574, 179, 1590, 1023 ] 
+      ConfigPrmDlgPosition     [ 564, 141, 1600, 1033 ] 
     }
     PropName		    "ConfigurationSets"
   }
@@ -798,8 +798,8 @@ Model {
   }
   System {
     Name		    "ofb"
-    Location		    [826, 497, 2378, 1022]
-    Open		    on
+    Location		    [65, 51, 1680, 1050]
+    Open		    off
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
     ScreenColor		    "white"
@@ -812,7 +812,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    "282"
+    SIDHighWatermark	    "283"
     Block {
       BlockType		      Inport
       Name		      "reference_orbit"
@@ -849,13 +849,12 @@ Model {
       BlockType		      Inport
       Name		      "bpm_noise"
       SID		      "77"
-      Position		      [643, 435, 657, 465]
+      Position		      [538, 435, 552, 465]
       ZOrder		      -1
       BlockRotation	      270
       Port		      "4"
       IconDisplay	      "Port number"
       PortDimensions	      "nbpm"
-      SampleTime	      "0"
     }
     Block {
       BlockType		      Inport
@@ -937,7 +936,7 @@ Model {
       BlockType		      Gain
       Name		      "Current to \nMagnetic field\nGain"
       SID		      "176"
-      Position		      [1060, 195, 1090, 225]
+      Position		      [1040, 195, 1070, 225]
       ZOrder		      -8
       Gain		      "corrmagnetgain"
       ParamDataTypeStr	      "Inherit: Inherit via internal rule"
@@ -989,7 +988,7 @@ Model {
       Name		      "Orbit Corrector\nMagnets\n(Current)"
       SID		      "226"
       Ports		      [1, 1]
-      Position		      [915, 192, 1010, 228]
+      Position		      [875, 192, 970, 228]
       ZOrder		      -1
       LibraryVersion	      "1.108"
       SourceBlock	      "cstblocks/LTI System"
@@ -1027,8 +1026,28 @@ Model {
 	port0			"off"
 	port1			"off"
       }
+      List {
+	ListType		InputPortLatchByCopyingInsideSignal
+	port0			"off"
+	port1			"off"
+	port2			"off"
+	port3			"off"
+	port4			"off"
+	port5			"off"
+	port6			"off"
+      }
       CopyOfModelName	      "sofb_bypass.mdl"
       DefaultDataLogging      on
+      List {
+	ListType		InputPortLatchByDelayingOutsideSignal
+	port0			"off"
+	port1			"off"
+	port2			"off"
+	port3			"off"
+	port4			"off"
+	port5			"off"
+	port6			"off"
+      }
     }
     Block {
       BlockType		      Sum
@@ -1063,7 +1082,7 @@ Model {
       Name		      "Sum3"
       SID		      "104"
       Ports		      [2, 1]
-      Position		      [640, 390, 660, 410]
+      Position		      [535, 390, 555, 410]
       ZOrder		      -18
       BlockMirror	      on
       ShowName		      off
@@ -1092,7 +1111,7 @@ Model {
       Name		      "Vacuum Chamber"
       SID		      "227"
       Ports		      [1, 1]
-      Position		      [1120, 192, 1215, 228]
+      Position		      [1115, 192, 1210, 228]
       ZOrder		      -1
       LibraryVersion	      "1.108"
       SourceBlock	      "cstblocks/LTI System"
@@ -1114,7 +1133,7 @@ Model {
       BlockType		      ZeroOrderHold
       Name		      "Zero-Order\nHold (FOFB)1"
       SID		      "241"
-      Position		      [530, 385, 560, 415]
+      Position		      [575, 385, 605, 415]
       ZOrder		      -19
       BlockMirror	      on
       NamePlacement	      "alternate"
@@ -1157,7 +1176,7 @@ Model {
       Name		      "select bpm"
       SID		      "233"
       Ports		      [1, 1]
-      Position		      [745, 313, 770, 487]
+      Position		      [745, 271, 770, 529]
       ZOrder		      -17
       BlockMirror	      on
       ShowName		      off
@@ -1209,7 +1228,7 @@ Model {
       BlockType		      Outport
       Name		      "corr_voltages"
       SID		      "108"
-      Position		      [878, 295, 892, 325]
+      Position		      [838, 295, 852, 325]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1220,7 +1239,7 @@ Model {
       BlockType		      Outport
       Name		      "corr_currents"
       SID		      "201"
-      Position		      [1023, 295, 1037, 325]
+      Position		      [988, 295, 1002, 325]
       ZOrder		      -9
       BlockRotation	      270
       BlockMirror	      on
@@ -1262,7 +1281,7 @@ Model {
     Line {
       SrcBlock		      "Sum"
       SrcPort		      1
-      Points		      [10, 0]
+      Points		      [15, 0]
       Branch {
 	DstBlock		"beam_orbit"
 	DstPort			1
@@ -1276,7 +1295,7 @@ Model {
     Line {
       SrcBlock		      "Orbit Corrector\nMagnets\n(Current)"
       SrcPort		      1
-      Points		      [15, 0]
+      Points		      [20, 0]
       Branch {
 	DstBlock		"Current to \nMagnetic field\nGain"
 	DstPort			1
@@ -1286,16 +1305,10 @@ Model {
 	DstPort			1
       }
       Branch {
-	Points			[0, -130; -450, 0; 0, 70]
+	Points			[0, -135; -400, 0]
 	DstBlock		"SOFB"
 	DstPort			3
       }
-    }
-    Line {
-      SrcBlock		      "Current to \nMagnetic field\nGain"
-      SrcPort		      1
-      DstBlock		      "Vacuum Chamber"
-      DstPort		      1
     }
     Line {
       SrcBlock		      "reference_orbit"
@@ -1314,18 +1327,6 @@ Model {
       SrcPort		      1
       DstBlock		      "Sum2"
       DstPort		      2
-    }
-    Line {
-      SrcBlock		      "select bpm"
-      SrcPort		      1
-      DstBlock		      "Sum3"
-      DstPort		      1
-    }
-    Line {
-      SrcBlock		      "Sum3"
-      SrcPort		      1
-      DstBlock		      "Zero-Order\nHold (FOFB)1"
-      DstPort		      1
     }
     Line {
       SrcBlock		      "Zero-Order\nHold (FOFB)2"
@@ -1398,12 +1399,6 @@ Model {
       }
     }
     Line {
-      SrcBlock		      "Zero-Order\nHold (FOFB)1"
-      SrcPort		      1
-      DstBlock		      "BPMs"
-      DstPort		      1
-    }
-    Line {
       SrcBlock		      "SOFB"
       SrcPort		      1
       DstBlock		      "control_sofb"
@@ -1433,7 +1428,7 @@ Model {
     Line {
       SrcBlock		      "SOFB"
       SrcPort		      2
-      Points		      [45, 0]
+      Points		      [5, 0]
       Branch {
 	DstBlock		"corr_voltages"
 	DstPort			1
@@ -1456,6 +1451,30 @@ Model {
 	DstBlock		"SOFB"
 	DstPort			1
       }
+    }
+    Line {
+      SrcBlock		      "Zero-Order\nHold (FOFB)1"
+      SrcPort		      1
+      DstBlock		      "Sum3"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "select bpm"
+      SrcPort		      1
+      DstBlock		      "Zero-Order\nHold (FOFB)1"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Sum3"
+      SrcPort		      1
+      DstBlock		      "BPMs"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Current to \nMagnetic field\nGain"
+      SrcPort		      1
+      DstBlock		      "Vacuum Chamber"
+      DstPort		      1
     }
   }
 }
