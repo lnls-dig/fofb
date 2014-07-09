@@ -1,4 +1,4 @@
-function fcsend(ip_address, fcn, npts_packet, ip_port, stopat)
+function data = fcsend(ip_address, fcn, npts_packet, ip_port, stopat)
 
 if nargin < 3 || isempty(npts_packet)
     npts_packet = 1000;
@@ -17,11 +17,16 @@ nvars = fcn('size');
 i=0;
 failure = false;
 
+ncols = 50;
+data = zeros(npts_packet*stopat, ncols);
+
 conn = tcpip(ip_address, ip_port, 'OutputBufferSize', 10*npts_packet*(nvars+1)*4);
 fopen(conn);
 while i < stopat
     [subdata, fcmode] = fcn(i, npts_packet);
 
+    data((1+i*npts_packet):(i+1)*npts_packet, :) = subdata; 
+    
     % Ensure data is encoded in 4-byte floating point representation
     subdata = single(subdata);
 
