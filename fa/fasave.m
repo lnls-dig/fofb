@@ -27,9 +27,7 @@ if ischar(filename)
             fwrite(fileid, data, 'double', 0, 'l');
         elseif strcmpi(mode, 'text')
             for i=1:size(data,1)
-                days = floor(timestamp(i)*24*60*60)/60/60/24;
-                useconds = floor(rem(timestamp(i)*24*60*60, 1)*1e6);
-                fprintf(fileid, '%s.%06d\t', datestr(days, 'yyyy/mm/dd HH:MM:SS'), useconds);
+                fprintf(fileid, fatimestr(timestamp(i)));
                 fprintf(fileid, '%0.10f\t', data(i, :));
                 fprintf(fileid, '\n');
             end

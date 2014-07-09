@@ -1,6 +1,7 @@
 function faplot(data, mode, selected_bpm, selected_corr)
 
-time = double(data.time-data.time(1))/1e6; % relative time [ms]
+start_time = fatimelvrt2m(data.time(1));
+time = double(data.time-data.time(1))/1e9; % relative time [s]
 
 if nargin < 2 || isempty(mode)
     mode = '';
@@ -62,15 +63,15 @@ corr_names = data.corr_names(selected_corr);
 % Plot graphs
 % ===========
 if ~isempty(data.bpm_readings)
-    plotvar(bpm_readings(:, 1:end/2), [], time, 'Beam position (horizontal plane)', bpmh_names, 'um', force_legend);
-    plotvar(bpm_readings(:, end/2+1:end), [], time, 'Beam position (vertical plane)', bpmv_names, 'um', force_legend);
+    plotvar(bpm_readings(:, 1:end/2), [], time, 'Beam position (horizontal plane)', bpmh_names, 'um', start_time, force_legend);
+    plotvar(bpm_readings(:, end/2+1:end), [], time, 'Beam position (vertical plane)', bpmv_names, 'um', start_time, force_legend);
 end
 
 if ~isempty(data.corr_readings)
-    plotvar(corr_readings, corr_setpoints, time, 'Orbit correctors'' power supplies', corr_names, 'mA', force_legend);
+    plotvar(corr_readings, corr_setpoints, time, 'Orbit correctors'' power supplies', corr_names, 'mA', start_time, force_legend);
 end
 
-function plotvar(var_values, setpoint_values, time, plot_name, var_names, unit, force_legend)
+function plotvar(var_values, setpoint_values, time, plot_name, var_names, unit, start_time, force_legend)
 
 hfig = figure;
 set(hfig, 'Name', plot_name);
@@ -79,7 +80,7 @@ hold on
 if ~isempty(setpoint_values)
     hplot_setpoint = plot(time, setpoint_values, '--');
 end
-xlabel('Time (ms)','FontSize',12,'FontWeight','bold');
+xlabel({'Time (s)',sprintf('Start time = %s', fatimestr(start_time))},'FontSize',12,'FontWeight','bold');
 ylabel(unit,'FontSize',12,'FontWeight','bold');
 title(plot_name,'FontSize',12,'FontWeight','bold');
 ax = axis;
@@ -87,7 +88,7 @@ axis([time(1) time(end) ax(3:4)]);
 set(gca, 'FontSize', 12);
 grid on
 
-if length(var_names) < 8 || (nargin > 6 && force_legend)
+if length(var_names) < 8 || (nargin > 7 && force_legend)
     legend(var_names,'FontSize',8);
 end
 
@@ -110,4 +111,4 @@ function outtxt = update_datatip(obj, event_obj)
 
 userdata = get(get(event_obj,'Target'), 'UserData');
 pos = get(event_obj,'Position');
-outtxt = {sprintf([userdata.name ': %0.3f %s'], pos(2), userdata.unit), sprintf('Time: %0.3f ms', pos(1))};
+outtxt = {sprintf([userdata.name ': %0.3f %s'], pos(2), userdata.unit), sprintf('Time: %0.3f ms', pos(1)*1e3)};
