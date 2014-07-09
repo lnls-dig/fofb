@@ -1,4 +1,4 @@
-function fadata = faload(filenames, selected_bpm, selected_corr)
+function fadata = faload(filenames, selected_bpm, selected_corr, npts)
 %
 % FALOAD Loads fast acquisition (FA) data from file.
 
@@ -10,15 +10,17 @@ if nargin < 3
     selected_corr = [];
 end
 
+if nargin < 4
+    npts = [];
+end
+
 if ischar(filenames)
     try
         fileid = fopen(filenames);
-        period = fread(fileid, 1, 'uint32', 'l');
 
-        header_bpm = readheader(fileid);
-        nbpm = length(header_bpm);
+        [period, header_bpm, header_corr] = readparams(fileid);
         
-        header_corr = readheader(fileid);
+        nbpm = length(header_bpm);
         ncorr = length(header_corr)/2;
         
         if nargin < 2 || isempty(selected_bpm)
@@ -32,25 +34,29 @@ if ischar(filenames)
         elseif selected_corr == 0
             selected_corr = [];
         end
-        
+               
         header_bpm = header_bpm(selected_bpm);
         header_corr = {header_corr{selected_corr} header_corr{ncorr+selected_corr}}';
         
         nselected_bpm = length(header_bpm);
         nselected_corr = length(header_corr);
         
-        data = [];
-        while true
-            nrows = fread(fileid, 1, 'uint32=>uint32', 'l');
-            ncols = fread(fileid, 1, 'uint32=>uint32', 'l');
-            if isempty(ncols) || isempty(nrows)
-                break;
-            end
+        fileinfo = dir(filenames);
+        remaining_bytes = fileinfo.bytes - ftell(fileid);
+
+        nrows = fread(fileid, 1, 'uint32=>uint32', 'l');
+        ncols = fread(fileid, 1, 'uint32=>uint32', 'l');
+
+        nblocks = remaining_bytes/4/(2+nrows*ncols);
+        data = zeros(nblocks*nrows, length(selected_bpm) + 2*length(selected_corr) + 2, 'single');
+        for i=0:nblocks-1
             subdata = fread(fileid, ncols*nrows, 'single=>single', 'l');
             subdata = reshape(subdata, ncols, nrows)';
-            data = [data; subdata(:, [selected_bpm (nbpm+selected_corr) (nbpm+ncorr+selected_corr)]) subdata(:, end-1:end)];
+            data_ = [subdata(:, [selected_bpm (nbpm+selected_corr) (nbpm+ncorr+selected_corr)]) subdata(:, end-1:end)];
+            data((i*nrows+1):((i+1)*nrows), :) = data_;
+            fread(fileid, 1, 'uint32=>uint32', 'l');
+            fread(fileid, 1, 'uint32=>uint32', 'l');
         end
-
         time_hi = typecast(data(:,end), 'uint32');
         time_lo = typecast(data(:,end-1), 'uint32');
         time = bitor(bitshift(uint64(time_hi), 32), uint64(time_lo));
@@ -74,29 +80,71 @@ if ischar(filenames)
                'period', period);
 
 elseif iscell(filenames)
-    fadata = struct('time', [], ...
-           'bpm_readings', [], ...
-           'bpm_names', [], ...
-           'corr_readings', [], ...
-           'corr_names', [], ...
-           'corr_setpoints', [], ...
-           'corr_setpoints_names', [], ...
-           'period', []);
+    if isempty(npts)
+        fadata = struct('time', [], ...
+            'bpm_readings', [], ...
+            'bpm_names', [], ...
+            'corr_readings', [], ...
+            'corr_names', [], ...
+            'corr_setpoints', [], ...
+            'corr_setpoints_names', [], ...
+            'period', []);
+    else
+        fileid = fopen(filenames{1});
+        [dummy, header_bpm, header_corr] = readparams(fileid);
+        nbpm = length(header_bpm);
+        ncorr = length(header_corr)/2;
+        fclose(fileid);
+        
+        if isempty(selected_bpm)
+            nselected_bpm = nbpm;
+        elseif selected_bpm == 0
+            nselected_bpm = 0;
+        else
+            nselected_bpm = length(selected_bpm);
+        end
 
-    for i=1:length(filenames)
-        sub_fadata = faload(filenames{i}, selected_bpm, selected_corr);
-
-        fadata.time         = [fadata.time;         sub_fadata.time];
-        fadata.bpm_readings = [fadata.bpm_readings; sub_fadata.bpm_readings];
-        fadata.corr_readings  = [fadata.corr_readings;  sub_fadata.corr_readings];
-        fadata.corr_setpoints = [fadata.corr_setpoints; sub_fadata.corr_setpoints];
-
-        fadata.bpm_names = compare(fadata.bpm_names, sub_fadata.bpm_names);
-        fadata.corr_names = compare(fadata.corr_names, sub_fadata.corr_names);
-        fadata.corr_setpoints_names = compare(fadata.corr_setpoints_names, sub_fadata.corr_setpoints_names);
-        fadata.period = compare(fadata.period, sub_fadata.period);
+        if isempty(selected_corr)
+            nselected_corr = ncorr;
+        elseif selected_corr == 0
+            nselected_corr = 0;
+        else
+            nselected_corr = length(selected_corr);
+        end
+        
+        fadata = struct('time', zeros(npts*length(filenames), 1, 'uint64'), ...
+            'bpm_readings', zeros(npts*length(filenames), nselected_bpm, 'single'), ...
+            'bpm_names', [], ...
+            'corr_readings', zeros(npts*length(filenames), nselected_corr, 'single'), ...
+            'corr_names', [], ...
+            'corr_setpoints', zeros(npts*length(filenames), nselected_corr, 'single'), ...
+            'corr_setpoints_names', [], ...
+            'period', []);
     end
+   
+       
+    for i=1:length(filenames)
+        subfadata = faload(filenames{i}, selected_bpm, selected_corr, npts);
+        if isempty(npts)
+            fadata.time           = [fadata.time;           subfadata.time];
+            fadata.bpm_readings   = [fadata.bpm_readings;   subfadata.bpm_readings];
+            fadata.corr_readings  = [fadata.corr_readings;  subfadata.corr_readings];
+            fadata.corr_setpoints = [fadata.corr_setpoints; subfadata.corr_setpoints];
+        else
+            fadata.time((i-1)*npts+1:i*npts) = subfadata.time;
+            fadata.bpm_readings((i-1)*npts+1:i*npts, :) = subfadata.bpm_readings;
+            fadata.corr_readings((i-1)*npts+1:i*npts, :) = subfadata.corr_readings;
+            fadata.corr_setpoints((i-1)*npts+1:i*npts, :) = subfadata.corr_setpoints;
+        end
+            
+        fadata.bpm_names            = compare(fadata.bpm_names, subfadata.bpm_names);
+        fadata.corr_names           = compare(fadata.corr_names, subfadata.corr_names);
+        fadata.corr_setpoints_names = compare(fadata.corr_setpoints_names, subfadata.corr_setpoints_names);
+        fadata.period               = compare(fadata.period, subfadata.period);        
+    end
+
 end
+
 
 function new = compare(current, new)
 
@@ -113,3 +161,10 @@ if ~isempty(header)
 else
     header = {};
 end
+
+
+function [period, header_bpm, header_corr] = readparams(fileid)
+
+period = fread(fileid, 1, 'uint32', 'l');
+header_bpm = readheader(fileid);
+header_corr = readheader(fileid);
