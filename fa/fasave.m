@@ -1,11 +1,21 @@
-function fasave(filename, data, timestamp, header, mode)
+function fasave(filename, data, timestamp, header, mode, prefix)
 
 if nargin < 5 || isempty(mode)
     mode = 'bin';
 end
 
+if nargin < 6 || isempty(prefix)
+    prefix = '';
+end
+
 if ischar(filename)
     try
+        for i=1:length(header)
+            header{i} = [prefix header{i}];
+        end
+        header = [[prefix 'DataHora']; header(:)];
+        
+        
         fileid = fopen(filename, 'w+');
         fprintf(fileid, '%s\t', header{:});
         fprintf(fileid, '\n');
@@ -17,8 +27,9 @@ if ischar(filename)
             fwrite(fileid, data, 'double', 0, 'l');
         elseif strcmpi(mode, 'text')
             for i=1:size(data,1)
-                %fprintf(fileid, '%s\t', datestr(timestamp(i), 'yyyy-mm-dd HH:MM:SS.FFFFFF'));
-                fprintf(fileid, '%d\t', timestamp(i));
+                days = floor(timestamp(i)*24*60*60)/60/60/24;
+                useconds = floor(rem(timestamp(i)*24*60*60, 1)*1e6);
+                fprintf(fileid, '%s.%06d\t', datestr(days, 'yyyy/mm/dd HH:MM:SS'), useconds);
                 fprintf(fileid, '%0.10f\t', data(i, :));
                 fprintf(fileid, '\n');
             end
