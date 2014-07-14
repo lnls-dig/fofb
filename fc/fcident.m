@@ -6,7 +6,7 @@ if ischar(varargin{1}) && strcmpi(varargin{1}, 'init')
     expout = [];
     if strcmpi(expinfo.excitation, 'step')
         step_duration = expinfo.duration/2;
-        fcdata = [ones(npts_packet*floor(step_duration), expinfo.ncols); -ones(npts_packet*ceil(step_duration), expinfo.ncols)];
+        fcdata = [-ones(npts_packet*floor(step_duration), expinfo.ncols); ones(npts_packet*ceil(step_duration), expinfo.ncols)];
     elseif strcmpi(expinfo.excitation, 'sine')
         [fcdata, expout.freqs] = idinput([npts_packet*expinfo.duration expinfo.ncols], 'sine', expinfo.band, [-1 1], expinfo.sinedata);
     else
