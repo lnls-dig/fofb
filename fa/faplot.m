@@ -62,16 +62,21 @@ corr_names = data.corr_names(selected_corr);
 % ===========
 % Plot graphs
 % ===========
+hax1 = [];
+hax2 = [];
+hax3 = [];
 if ~isempty(data.bpm_readings)
-    plotvar(bpm_readings(:, 1:end/2), [], time, 'Beam position (horizontal plane)', bpmh_names, 'um', start_time, force_legend);
-    plotvar(bpm_readings(:, end/2+1:end), [], time, 'Beam position (vertical plane)', bpmv_names, 'um', start_time, force_legend);
+    hax1 = plotvar(bpm_readings(:, 1:end/2), [], time, 'Beam position (horizontal plane)', bpmh_names, 'um', start_time, force_legend);
+    hax2 = plotvar(bpm_readings(:, end/2+1:end), [], time, 'Beam position (vertical plane)', bpmv_names, 'um', start_time, force_legend);
 end
 
 if ~isempty(data.corr_readings)
-    plotvar(corr_readings, corr_setpoints, time, 'Orbit correctors'' power supplies', corr_names, 'mA', start_time, force_legend);
+    hax3 = plotvar(corr_readings, corr_setpoints, time, 'Orbit correctors'' power supplies', corr_names, 'mA', start_time, force_legend);
 end
 
-function plotvar(var_values, setpoint_values, time, plot_name, var_names, unit, start_time, force_legend)
+linkaxes([hax1 hax2 hax3],'x');
+
+function hax = plotvar(var_values, setpoint_values, time, plot_name, var_names, unit, start_time, force_legend)
 
 hfig = figure;
 set(hfig, 'Name', plot_name);
@@ -106,6 +111,8 @@ end
 dcm_obj = datacursormode(hfig);
 set(dcm_obj,'enable','on')
 set(dcm_obj,'UpdateFcn', @update_datatip)
+
+hax = get(hplots(1), 'Parent');
 
 function outtxt = update_datatip(obj, event_obj)
 
