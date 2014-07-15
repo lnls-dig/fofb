@@ -20,8 +20,10 @@ if ischar(filenames)
 
         [period, header_bpm, header_corr] = readparams(fileid);
         
-        nbpm = length(header_bpm);
+        nbpm_readings = length(header_bpm);
         ncorr = length(header_corr)/2;
+        
+        nbpm = nbpm_readings/2;
         
         if nargin < 2 || isempty(selected_bpm)
             selected_bpm = 1:nbpm;
@@ -34,8 +36,10 @@ if ischar(filenames)
         elseif selected_corr == 0
             selected_corr = [];
         end
+        
+        selected_bpm_readings = [selected_bpm (selected_bpm+nbpm)];
                
-        header_bpm = header_bpm(selected_bpm);
+        header_bpm = header_bpm(selected_bpm_readings);
         header_corr = {header_corr{selected_corr} header_corr{ncorr+selected_corr}}';
         
         nselected_bpm = length(header_bpm);
@@ -48,11 +52,11 @@ if ischar(filenames)
         ncols = fread(fileid, 1, 'uint32=>uint32', 'l');
 
         nblocks = remaining_bytes/4/(2+nrows*ncols);
-        data = zeros(nblocks*nrows, length(selected_bpm) + 2*length(selected_corr) + 2, 'single');
+        data = zeros(nblocks*nrows, length(selected_bpm_readings) + 2*length(selected_corr) + 2, 'single');
         for i=0:nblocks-1
             subdata = fread(fileid, ncols*nrows, 'single=>single', 'l');
             subdata = reshape(subdata, ncols, nrows)';
-            data_ = [subdata(:, [selected_bpm (nbpm+selected_corr) (nbpm+ncorr+selected_corr)]) subdata(:, end-1:end)];
+            data_ = [subdata(:, [selected_bpm_readings (nbpm_readings+selected_corr) (nbpm_readings+ncorr+selected_corr)]) subdata(:, end-1:end)];
             data((i*nrows+1):((i+1)*nrows), :) = data_;
             fread(fileid, 1, 'uint32=>uint32', 'l');
             fread(fileid, 1, 'uint32=>uint32', 'l');
@@ -92,18 +96,21 @@ elseif iscell(filenames)
     else
         fileid = fopen(filenames{1});
         [dummy, header_bpm, header_corr] = readparams(fileid);
-        nbpm = length(header_bpm);
+        nbpm_readings = length(header_bpm);
         ncorr = length(header_corr)/2;
         fclose(fileid);
         
+        nbpm = nbpm_readings/2;
+        
         if isempty(selected_bpm)
-            nselected_bpm = nbpm;
+            selected_bpm = 1:nbpm;
         elseif selected_bpm == 0
-            nselected_bpm = 0;
-        else
-            nselected_bpm = length(selected_bpm);
+            selected_bpm = [];
         end
-
+        
+        selected_bpm_readings = [selected_bpm (selected_bpm+nbpm)];
+        nselected_bpm_readings = length(selected_bpm_readings);
+        
         if isempty(selected_corr)
             nselected_corr = ncorr;
         elseif selected_corr == 0
@@ -113,7 +120,7 @@ elseif iscell(filenames)
         end
         
         fadata = struct('time', zeros(npts*length(filenames), 1, 'uint64'), ...
-            'bpm_readings', zeros(npts*length(filenames), nselected_bpm, 'single'), ...
+            'bpm_readings', zeros(npts*length(filenames), nselected_bpm_readings, 'single'), ...
             'bpm_names', [], ...
             'corr_readings', zeros(npts*length(filenames), nselected_corr, 'single'), ...
             'corr_names', [], ...
