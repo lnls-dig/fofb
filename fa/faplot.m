@@ -10,6 +10,8 @@ end
 nbpm = size(data.bpm_readings,2)/2;
 if nargin < 3 || isempty(selected_bpm)
     selected_bpm = 1:nbpm;
+elseif selected_bpm == 0
+    selected_bpm = [];
 end
 selected_bpm_readings = [selected_bpm (selected_bpm+nbpm)];
 nselected_bpm = length(selected_bpm);
@@ -17,6 +19,8 @@ nselected_bpm = length(selected_bpm);
 ncorr = size(data.corr_readings,2);
 if nargin < 4 || isempty(selected_corr)
     selected_corr = 1:ncorr;
+elseif selected_corr == 0
+    selected_corr = [];
 end
 nselected_corr = length(selected_corr);
 
@@ -65,12 +69,12 @@ corr_names = data.corr_names(selected_corr);
 hax1 = [];
 hax2 = [];
 hax3 = [];
-if ~isempty(data.bpm_readings)
+if ~isempty(bpm_readings)
     hax1 = plotvar(bpm_readings(:, 1:end/2), [], time, 'Beam position (horizontal plane)', bpmh_names, 'um', start_time, force_legend);
     hax2 = plotvar(bpm_readings(:, end/2+1:end), [], time, 'Beam position (vertical plane)', bpmv_names, 'um', start_time, force_legend);
 end
 
-if ~isempty(data.corr_readings)
+if ~isempty(corr_readings)
     hax3 = plotvar(corr_readings, corr_setpoints, time, 'Orbit correctors'' power supplies', corr_names, 'mA', start_time, force_legend);
 end
 
