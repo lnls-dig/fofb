@@ -58,7 +58,7 @@ while i < stopat
             failure = true;
             break
         end
-        pause(0.01);
+        pause(npts_packet*expinfo.Ts*0.75);
     end
     
     if failure

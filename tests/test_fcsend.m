@@ -15,3 +15,8 @@ elseif strcmpi(expinfo.excitation, 'rgs') || ...
        strcmpi(expinfo.excitation, 'prbs')
     expinfo.band = [0 1];
 end
+
+stopat = (exp.duration+1)*(size(profiles, 1)+1);
+npts_packet = 100;
+fclog('/media/fofb-archiver/fc/fcsend_log.txt', expinfo, npts_packet, stopat);
+[fcdata, expout] = fcsend('10.0.5.31', @fcident, expinfo, npts_packet, stopat);
