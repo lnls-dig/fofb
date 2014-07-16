@@ -28,6 +28,7 @@ if ischar(filename)
         elseif strcmpi(mode, 'text')
             for i=1:size(data,1)
                 fprintf(fileid, fatimestr(timestamp(i)));
+                fprintf(fileid, '\t');
                 fprintf(fileid, '%0.10f\t', data(i, :));
                 fprintf(fileid, '\n');
             end
