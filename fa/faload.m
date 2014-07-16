@@ -103,13 +103,12 @@ elseif iscell(filenames)
         nbpm = nbpm_readings/2;
         
         if isempty(selected_bpm)
-            selected_bpm = 1:nbpm;
+            nselected_bpm_readings = nbpm_readings;
         elseif selected_bpm == 0
-            selected_bpm = [];
+            nselected_bpm_readings = 0;
+        else
+            nselected_bpm_readings = 2*length(selected_bpm);
         end
-        
-        selected_bpm_readings = [selected_bpm (selected_bpm+nbpm)];
-        nselected_bpm_readings = length(selected_bpm_readings);
         
         if isempty(selected_corr)
             nselected_corr = ncorr;
