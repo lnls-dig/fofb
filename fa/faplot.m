@@ -28,16 +28,12 @@ nselected_corr = length(selected_corr);
 bpm_visualization_offset = 50;
 corr_visualization_offset = 50;
 
-if ~isempty(data.bpm_readings)
-    % Convert BPM data from mm to um
-    bpm_readings = double(1e3*data.bpm_readings(:, selected_bpm_readings));
-end
+% Convert BPM data from mm to um
+bpm_readings = double(1e3*data.bpm_readings(:, selected_bpm_readings));
 
-if ~isempty(data.corr_readings)
-    % Convert corrector power supply data from A to mA
-    corr_readings = double(1e3*data.corr_readings(:, selected_corr));
-    corr_setpoints = double(1e3*data.corr_setpoints(:, selected_corr));
-end
+% Convert corrector power supply data from A to mA
+corr_readings = double(1e3*data.corr_readings(:, selected_corr));
+corr_setpoints = double(1e3*data.corr_setpoints(:, selected_corr));
 
 if strcmpi(mode, 'relative')
     if ~isempty(data.bpm_readings)
@@ -105,7 +101,7 @@ for i=1:length(hplots)
     userdata.name = var_names{i};
     userdata.unit = unit;
     set(hplots(i), 'UserData', userdata);
-
+    
     if ~isempty(setpoint_values)
         userdata_setpoint = userdata;
         userdata_setpoint.name = [userdata_setpoint.name ' (setpoint)'];
