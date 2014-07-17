@@ -47,15 +47,14 @@ while i < stopat
                 fwrite(conn, subdatainfo.bytes+8, 'uint32');
                 fwrite(conn, uint32(size(packet)), 'uint32');
                 fwrite(conn, subdata(1:end), 'single');
-                
                 i=i+1;
+                pause(npts_packet*expinfo.Ts*0.75); % npts_packet*expinfo.Ts is the time in seconds needed to consume the packet that was just sent
                 break
             end
         catch err
             failure = true;
             break
         end
-        pause(npts_packet*expinfo.Ts*0.75);
     end
     
     if failure
