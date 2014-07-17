@@ -38,8 +38,8 @@ else
         fprintf('profile #%d', profile_number);
         fcdata = varargin{4};
         indices1 = ((i_ - expinfo.pauselength)*npts_packet+(1:npts_packet));
-        indices2 = ((i - expinfo.pauselength)*npts_packet+(1:npts_packet));
-        t = ((indices2-1)*expinfo.Ts)';
+        %indices2 = ((i - expinfo.pauselength)*npts_packet+(1:npts_packet));
+        %t = ((indices2-1)*expinfo.Ts)';
         if profile_number ~= 0
             cols = 1;
         else
