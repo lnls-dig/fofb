@@ -20,24 +20,15 @@ else
     expinfo = varargin{3};
     fprintf('packet #%d: ', i+1);
     
-    expnumber = floor(i/(expinfo.duration+1));
-    i_ = rem(i,(expinfo.duration+1));
-    repeatprofiles_after = size(expinfo.profiles,1)+1;
+    expnumber = floor(i/(expinfo.duration + expinfo.pauselength));
+    i_ = rem(i,(expinfo.duration + expinfo.pauselength));
+    repeatprofiles_after = size(expinfo.profiles,1) + 1;
     profile_number = rem(expnumber, repeatprofiles_after);
-    if i_ == 0 || (~expinfo.uncorrelated && (profile_number == 0))
+    if i_ < expinfo.pauselength || (~expinfo.uncorrelated && (profile_number == 0))
         packet = zeros(npts_packet, expinfo.ncols);
         expinterval = true;
         fprintf('pause');
-        figure(1)
-        subplot(211)
-        if ~expinfo.uncorrelated
-            plot(0,0);
-            text(0,0,'paused','HorizontalAlignment','center')
-        end
-        hold off
-        set(gca, 'YLimMode', 'manual')
-        set(gca, 'YLim', [-3 3]*expinfo.amplitude)
-        
+       
     else
         if profile_number == 0
             profile = diag(ones(1, size(expinfo.profiles,2)));
@@ -46,8 +37,8 @@ else
         end
         fprintf('profile #%d', profile_number);
         fcdata = varargin{4};
-        indices1 = ((i_-1)*npts_packet+(1:npts_packet));
-        indices2 = ((i-1)*npts_packet+(1:npts_packet));
+        indices1 = ((i_ - expinfo.pauselength)*npts_packet+(1:npts_packet));
+        indices2 = ((i - expinfo.pauselength)*npts_packet+(1:npts_packet));
         t = ((indices2-1)*expinfo.Ts)';
         if profile_number ~= 0
             cols = 1;
@@ -55,19 +46,7 @@ else
             cols = 1:size(profile,2);
         end
         packet = expinfo.amplitude*fcdata(indices1,cols)*profile;
-        figure(1)
-        subplot(211)
-        plot(t,packet);
-        set(gca, 'YLimMode', 'manual')
-        set(gca, 'YLim', [-3 3]*expinfo.amplitude)
-        hold on
-        subplot(212);
-        if size(profile,1) > 1
-            plot(0,0);
-            text(0,0,sprintf('%d uncorrelated inputs', size(profile,2)),'HorizontalAlignment','center')
-        else
-            plot(profile,'-o');
-        end
+
         % Zero-padding
         packet = [packet zeros(npts_packet, expinfo.ncols-size(packet,2))];
         expinterval = false;
