@@ -22,8 +22,6 @@ end
 i=0;
 failure = false;
 
-data = zeros(npts_packet*stopat, ncols);
-
 conn = tcpip(ip_.address, ip_.port, 'OutputBufferSize', 10*npts_packet*(expinfo.ncols+1)*4);
 fopen(conn);
 while i < stopat
@@ -45,8 +43,7 @@ while i < stopat
             if fread(conn, 1, 'uint8')
                 packet = [packet repmat(typecast(fcmode, 'single'), npts_packet, 1)];
                 subdata = packet';
-                subdatainfo = whos('subdatat');
-                
+                subdatainfo = whos('subdata');
                 fwrite(conn, subdatainfo.bytes+8, 'uint32');
                 fwrite(conn, uint32(size(packet)), 'uint32');
                 fwrite(conn, subdata(1:end), 'single');
@@ -54,7 +51,7 @@ while i < stopat
                 i=i+1;
                 break
             end
-        catch
+        catch err
             failure = true;
             break
         end
