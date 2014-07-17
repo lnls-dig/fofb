@@ -30,7 +30,14 @@ else
         fprintf('pause');
         figure(1)
         subplot(211)
+        if ~expinfo.uncorrelated
+            plot(0,0);
+            text(0,0,'paused','HorizontalAlignment','center')
+        end
         hold off
+        set(gca, 'YLimMode', 'manual')
+        set(gca, 'YLim', [-3 3]*expinfo.amplitude)
+        
     else
         if profile_number == 0
             profile = diag(ones(1, size(expinfo.profiles,2)));
@@ -51,13 +58,15 @@ else
         figure(1)
         subplot(211)
         plot(t,packet);
+        set(gca, 'YLimMode', 'manual')
+        set(gca, 'YLim', [-3 3]*expinfo.amplitude)
         hold on
         subplot(212);
         if size(profile,1) > 1
             plot(0,0);
             text(0,0,sprintf('%d uncorrelated inputs', size(profile,2)),'HorizontalAlignment','center')
         else
-            plot(profile);
+            plot(profile,'-o');
         end
         % Zero-padding
         packet = [packet zeros(npts_packet, expinfo.ncols-size(packet,2))];
