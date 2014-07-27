@@ -12,7 +12,9 @@ if ischar(varargin{1}) && strcmpi(varargin{1}, 'init')
     elseif strcmpi(expinfo.excitation, 'sine')
         [fcdata, expout.freqs] = idinput([npts_packet*expinfo.duration expinfo.ncols expinfo.nperiods], 'sine', expinfo.band, [-1 1], expinfo.sinedata);
     else
-        fcdata = idinput([npts_packet*expinfo.duration expinfo.ncols expinfo.nperiods], expinfo.excitation, expinfo.band, [-1 1]);
+        fcdata = idinput([floor(2*npts_packet*expinfo.duration/expinfo.nperiods) expinfo.ncols expinfo.nperiods], expinfo.excitation, expinfo.band, [-1 1]); % FIXME
+        fcdata = fcdata(1:floor(npts_packet*expinfo.duration/2047)*2047,:); % FIXME
+        fcdata = [fcdata; zeros(npts_packet*expinfo.duration - size(fcdata,1), size(fcdata,2))];
     end
     
     varargout = {fcdata, expout};
