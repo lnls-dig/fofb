@@ -1,16 +1,18 @@
 function varargout = fcident(varargin)
 
+siso2mimo_derate_factor = 0.1;
+
 if ischar(varargin{1}) && strcmpi(varargin{1}, 'init')
     npts_packet = varargin{2};
     expinfo = varargin{3};
     expout = [];
     if strcmpi(expinfo.excitation, 'step')
         step_duration = expinfo.duration/2;
-        fcdata = [-ones(npts_packet*floor(step_duration), expinfo.ncols); ones(npts_packet*ceil(step_duration), expinfo.ncols)];
+        fcdata = [-ones(npts_packet*floor(step_duration), expinfo.ncols)/2; ones(npts_packet*ceil(step_duration)/2, expinfo.ncols)];
     elseif strcmpi(expinfo.excitation, 'sine')
-        [fcdata, expout.freqs] = idinput([npts_packet*expinfo.duration expinfo.ncols], 'sine', expinfo.band, [-1 1], expinfo.sinedata);
+        [fcdata, expout.freqs] = idinput([npts_packet*expinfo.duration expinfo.ncols expinfo.nperiods], 'sine', expinfo.band, [-1 1], expinfo.sinedata);
     else
-        fcdata = idinput([npts_packet*expinfo.duration expinfo.ncols], expinfo.excitation, expinfo.band, [-1 1]);
+        fcdata = idinput([npts_packet*expinfo.duration expinfo.ncols expinfo.nperiods], expinfo.excitation, expinfo.band, [-1 1]);
     end
     
     varargout = {fcdata, expout};
@@ -31,7 +33,7 @@ else
        
     else
         if profile_number == 0
-            profile = diag(ones(1, size(expinfo.profiles,2)));
+            profile = diag(ones(1, size(expinfo.profiles,2)))*siso2mimo_derate_factor;
         else
             profile = expinfo.profiles(profile_number,:);
         end
