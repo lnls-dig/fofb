@@ -1,8 +1,4 @@
-function [sysd, fit, sys_array] = idcorrps(data, idmethod, order, idvalfactor, nk, Ts)
-
-if nargin < 4 || isempty(idvalfactor)
-    idvalfactor = 2/3;
-end
+function [sysd, fit, sys_array] = idcorrps(data_id, data_val, idmethod, order, nk, Ts)
 
 if nargin < 5
     nk = [];
@@ -12,24 +8,18 @@ if nargin < 6
     Ts = -1;
 end
 
-ncorr = length(data);
+ncorr = length(data_id);
 
 sysd = zpk([],[],1,-1);
 fit = zeros(ncorr,1);
 
 for i=1:ncorr
-    
-    npts_ident = floor(size(data{i},1)*idvalfactor);
-
-    data_ident = data{i}(1:npts_ident);
-    data_val = data_ident; data{i}(npts_ident+1:end);
-    
     if isempty(nk)
-        nk_ = delayest(data_ident);
+        nk_ = delayest(data_id{i});
     else
         nk_ = nk;
     end
-    sys = idmethod(data_ident, [order nk_]);
+    sys = idmethod(detrend(data_id{i},0), [order nk_]);
     sys_array{i} = sys;
     syszpk = zpk(sys);
     syszpk = syszpk(1,1);
@@ -38,6 +28,6 @@ for i=1:ncorr
     sysd(i,i) = syszpk;
     dly = length(find(syszpk.p{1} == 0));
     syszpk.p = {syszpk.p{1}((syszpk.p{1} ~= 0))};
-    [~, fit(i)] = compare(data_val, sys);
-    fprintf('%s: %0.1f%% \n', data_ident.OutputName{1}, fit(i));
+    [~, fit(i)] = compare(detrend(data_val{i},0), sys, Inf);
+    fprintf('%s: %0.1f%% \n', data_id{i}.OutputName{1}, fit(i));
 end
