@@ -1,66 +1,62 @@
-Ts = 320e-6;
-prbsperiod=2047;
-ncorrmod=4;
-nk = 1;
-nu = 1;
-mcorr = idgrey('idcorrcicmodel',zeros(nu*(2*ncorrmod+1),1),'d',[nk,ncorrmod,nu],'InitialState','Zero');
-mcorr.Ts = Ts;
-%'DisturbanceModel','None'
+% Ts = 320e-6;
+% prbsperiod=2047;
+% ncorrmod=4;
+% nk = 1;
+% nu = 1;
+% mcorr = idgrey('idcorrpscicmodel',zeros(nu*(2*ncorrmod+1),1),'d',[nk,ncorrmod,nu],'InitialState','Zero');
+% mcorr.Ts = Ts;
+% %'DisturbanceModel','None'
+% 
+% syscorrarray = {};
+% for corr=1:42
+%     corr_iddata_id{corr+1}.Ts = Ts;
+%     m3 = tf(pem(detrend(corr_iddata_id{corr+1},0), mcorr));
+%     syscorrarray{corr} = m3(1,1);
+% end
 
-syscorrarray = {};
-for corr=1:42
-    corr_iddata_id{corr+1}.Ts = Ts;
-    m3 = tf(pem(detrend(corr_iddata_id{corr+1},0), mcorr));
-    syscorrarray{corr} = m3(1,1);
-end
+bpms = 1:25;
+corrs = 1:18;
 
-sysbpm_array = {};
-fit = {};
-
-nbpm=25;
-ncorr=18;
-nbpmmod=3;
+nbpm=length(bpms);
+ncorr=length(corrs);
+nxbpm=2;
+nxcorr=0;
 nk=1;
 
-for bpm=1:nbpm
-    
-    ue=[];
-    ye=[];
-    uv=[];
-    yv=[];
-    
-    for corr=1:ncorr
-        u = bpm_iddata_id{corr+1}.InputData;
-        um = lsim(syscorrarray{corr}, [u; u]);
-        
-        ue(:,corr) = um(prbsperiod+1:2*prbsperiod);
-        ye(:,corr) = bpm_iddata_id{corr+1}.OutputData(:,bpm);
-        uv(:,corr) = um(prbsperiod+1:2*prbsperiod);
-        yv(:,corr) = bpm_iddata_val{corr+1}.OutputData(:,bpm);
-    end
-    
-    std_factor = std(ye)./sort(std(ue));
-    selected_corrs = find(std_factor/max(std_factor) > 0.5);
+M_ = M(bpms,corrs);
 
-    mbpm = idgrey('idbpmmodel',zeros(2*nbpmmod+1+length(selected_corrs),1),'d',[nk,nbpmmod,length(selected_corrs)],'InitialState','Zero');
-    mbpm.Ts = Ts;
-    
-    ue = ue(:, selected_corrs);
-    ye = ye(:, selected_corrs);
-    uv = uv(:, selected_corrs);
-    yv = yv(:, selected_corrs);
-    
-    datae = iddata(ye,ue,Ts);
-    datav = iddata(yv,uv,Ts);
-    
-    datae.Ts = Ts;
-    m4 = pem(detrend(datae,0), mbpm);
-    
-    sysbpm = ss(m4);
-    sysbpm = ss(sysbpm.A(1:order,1:order), sysbpm.B(1:order,1),sysbpm.C(1,1:order),sysbpm.D(1,1),320e-6);
-    sysbpm_array{bpm} = tf(sysbpm)/dcgain(sysbpm);
-    
-    [~,fit{bpm}]=compare(m4,detrend(datav,0));
-plot(squeeze(fit{bpm})); hold all
-bpm
+ue=[];
+ye=[];
+uv=[];
+yv=[];
+
+i=1;
+for corr = corrs
+    u = bpm_iddata_id{1}.InputData(:,corr);
+    um = lsim(syscorrarray{corr}, [u; u]);
+    ue(:,i) = um(prbsperiod+1:2*prbsperiod);
+    uv(:,i) = um(prbsperiod+1:2*prbsperiod);
+    i=i+1;
 end
+
+%param = 
+
+param = zeros(nbpm*(2*nxbpm+1) + ncorr*(2*nxcorr+1),1);
+%load parameters; param = repmat(param, 1, 2);
+
+param = [repmat([-0.0399 0.5288], 1, nbpm)  repmat([0.6777 0.1918], 1, nbpm) repmat(1, 1, nbpm)];
+
+fofbmodel = idgrey('idfofbmodel',param,'d',[nk,nbpm,ncorr,nxbpm,nxcorr,M_(:)'],'InitialState','Zero');
+fofbmodel.Ts = Ts;
+fofbmodel.Algorithm.Focus = 'Simulation';
+fofbmodel.Algorithm.Display = 'On';
+
+datae = iddata(bpm_iddata_id{1}.OutputData(:,bpms),ue,Ts);
+datav = iddata(bpm_iddata_id{1}.OutputData(:,bpms),uv,Ts);
+
+datae.Ts = Ts;
+m4 = pem(detrend(datae,0), fofbmodel);
+
+[~,fit] = compare(m4,detrend(datav,0));
+fit = squeeze(fit);
+hold all; plot(fit)
