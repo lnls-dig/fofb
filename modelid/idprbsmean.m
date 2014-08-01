@@ -19,7 +19,7 @@ for i=1:length(sysid_data_array)
     end
     
     sysid_data_id = sysid_data_id(1:period);
-    sysid_data_val = sysid_data_id(1:period);
+    sysid_data_val = sysid_data_val(1:period);
     
     sysid_data_id.Tstart = 0;
     sysid_data_val.Tstart = size(sysid_data_id,1)*sysid_data_id.Ts;
