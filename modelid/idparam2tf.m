@@ -1,44 +1,52 @@
-function [sys_bpm, sys_corr] = idparam2tf(param, nk, nbpm, ncorr, nxbpm, nxcorr, bpmungain, corrungain)
+function [sys_bpm, sys_corr] = idparam2tf(param, nk, nbpm, ncorr, nabpm, nbbpm, nacorr, nbcorr, bpmungain, corrungain)
+
+if bpmungain
+    bpmnfix=1;
+else
+    bpmnfix=0;
+end
+if corrungain
+    corrnfix=1;
+else
+    corrnfix=0;
+end
+
 
 pbpmoffset = 0;
-pcorroffset = 2*nxbpm+1;
+pcorroffset = nabpm+nbbpm+1-bpmnfix;
 
-p1bpm = param(pbpmoffset + (1:nbpm*nxbpm));
-p2bpm = param(pbpmoffset + (nbpm*nxbpm+1:nbpm*2*nxbpm));
-if ~bpmungain
-    p3bpm = param(pbpmoffset + (nbpm*2*nxbpm+1:nbpm*(2*nxbpm+1)));
-else
-    p3bpm = [];
+bpm_a = [ones(1,nbpm); reshape(param(pbpmoffset + (1:nbpm*nabpm)), nabpm, [])];
+bpm_b = reshape(param(pbpmoffset + (nbpm*nabpm+1:nbpm*nabpm+nbpm*(nbbpm+1)-nbpm*bpmnfix)), nbbpm, []);
+if isempty(bpm_b)
+    bpm_b = zeros(0,nbpm);
 end
-sys_bpm = idparam2tf_(p1bpm, p2bpm, p3bpm, 0, nbpm, nxbpm, bpmungain);
-
-p1corr = param(pcorroffset + (1:ncorr*nxcorr));
-p2corr = param(pcorroffset + (ncorr*nxcorr+1:ncorr*2*nxcorr));
-if ~corrungain
-    p3corr = param(pcorroffset + (ncorr*2*nxcorr+1:ncorr*(2*nxcorr+1)));
+if bpmungain
+    bpm_blast = sum(bpm_a,1)-sum(bpm_b,1);
 else
-    p3corr = [];
+    bpm_blast = [];
 end
-sys_corr = idparam2tf_(p1corr, p2corr, p3corr, nk, ncorr, nxcorr, corrungain);
+bpm_b = [bpm_blast; bpm_b];
+sys_bpm = idparam2tf_(bpm_a, bpm_b, 0, nbpm);
 
-function sys = idparam2tf_(p1, p2, p3, nk, nu, nx, ungain)
+corr_a = [ones(1,ncorr); reshape(param(pcorroffset + (1:ncorr*nacorr)), nacorr, [])];
+corr_b = reshape(param(pcorroffset + (ncorr*nacorr+1:ncorr*nacorr+ncorr*(nbcorr+1)-ncorr*corrnfix)), nbcorr, []);
+if isempty(corr_b)
+    corr_b = zeros(0,ncorr);
+end
+if corrungain
+    corr_blast = sum(corr_a,1)-sum(corr_b,1);
+else
+    corr_blast = [];
+end
+corr_b = [corr_blast; corr_b];
+sys_corr = idparam2tf_(corr_a, corr_b, nk, ncorr);
+
+function sys = idparam2tf_(a, b, nk, nu)
 
 Ts = 320e-6;
 
 for i=1:nu
-    A = [[zeros(1,nx-1); eye(nx-1)] p1((i-1)*nx + (1:nx))];
-    if nx > 0
-        B = [1; zeros(nx-1,1)];
-    else
-        B = zeros(0,1);
-    end
-    C = p2((i-1)*nx + (1:nx))';
-    if ~ungain
-        D = p3((i-1) + 1);
-    else
-        D = 1-C*((eye(nx)-A)\B);
-    end
-    sys{i} = ss(A,B,C,D,Ts);
+    sys{i} = tf(b(:,i)',a(:,i)',Ts);
     if nk > 0
         sys{i}.InputDelay = nk;
     end
