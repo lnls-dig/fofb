@@ -1,4 +1,4 @@
-function [a,b] = idparam2ab(param,nu,order,ungain)
+function [a,b] = idparam2ab(param, nu, order, ungain)
 
 if nargin < 4
     ungain = false;

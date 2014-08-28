@@ -1,4 +1,4 @@
-function param = idab2param(a,b,order,ungain)
+function param = idab2param(a, b, order, ungain)
 
 if nargin < 4
     ungain = false;
