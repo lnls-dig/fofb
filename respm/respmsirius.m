@@ -1,4 +1,4 @@
-function M = respmsirius
+function [Mcorr, Mss, Mdisp, Mrf] = respmsirius(plane)
 %RESPMSIRIUS Orbit response matrices and disturbance matrices.
 %   M = fofb_orbit_respm_sirius(THERING) calculates Sirius's orbit response
 %   matrices in 4-D transverse phase space:
@@ -29,8 +29,8 @@ function M = respmsirius
 %   orbit point indexes, input and disturbance indexes ***
 
 global THERING;
-sirius;
-setoperationalmode(1);
+% sirius;
+% setoperationalmode(1);
 
 fprintf('\n   -------------------------------\n    Starting "sirius_orbit_respm"\n   -------------------------------\n');
 
@@ -75,19 +75,23 @@ id = sort([mia; mib]);
 source =  sort([mc; id]);
 hcm = findcells(THERING, 'FamName', 'hcm')';
 vcm = findcells(THERING, 'FamName', 'vcm')';
+crhv = findcells(THERING, 'FamName', 'crhv')';
 quad = sort([qad; qaf; qbd1; qbd2; qbf; qf1; qf2; qf3; qf4]);
 dipole = sort([bc b1 b2 b3])';
 rf = findcells(THERING, 'FamName', 'cav')';
 
+if strcmpi(plane, 'h')
+    cm = hcm;
+elseif strcmpi(plane, 'v')
+    cm = vcm;
+end
+
 markers = struct( ...
-    'bpm', bpm, ...
-    'source', source, ...
-    'hcm', hcm, ...
-    'vcm', vcm, ...
-    'id', [], ...id, ...
-    'quad', quad, ...
-    'dipole', dipole, ...
+    'orbit', source, ...
+    'corr', crhv, ...
+    'ss', id, ...
+    'disp', quad, ...
     'rf', rf ...
 );
 
-M = respmorbit(THERING, markers, 'h');
+[Mcorr, Mss, Mdisp, Mrf] = respmorbit(THERING, markers, plane);
