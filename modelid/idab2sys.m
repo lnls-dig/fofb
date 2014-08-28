@@ -1,5 +1,9 @@
-function sys = idab2sys(a,b)
+function sys = idab2sys(a, b, Ts)
 
-for i=1:size(a,1)
-    sys{i} = tf(b(i,:),a(i,:),-1);
+if nargin < 3
+    Ts = -1;
+end
+
+for i=1:length(a)
+    sys{i} = tf(b{i}, a{i}, Ts);
 end
