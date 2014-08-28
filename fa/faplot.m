@@ -45,9 +45,10 @@ if strcmpi(mode, 'relative')
     
     if ~isempty(data.corr_readings)
         offset_corr = ((0:nselected_corr-1) - floor(nselected_corr/2))*corr_visualization_offset;
-        corr_dc = mean(corr_setpoints);
+        corr_dc = mean(corr_readings);
+        corr_setpoints_dc = mean(corr_setpoints);
         corr_readings = corr_readings - repmat(corr_dc + offset_corr, size(corr_readings, 1), 1);
-        corr_setpoints = corr_setpoints - repmat(corr_dc + offset_corr, size(corr_setpoints, 1), 1);
+        corr_setpoints = corr_setpoints - repmat(corr_setpoints_dc + offset_corr, size(corr_setpoints, 1), 1);
     end
     
     force_legend = true;
