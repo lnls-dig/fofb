@@ -7,6 +7,9 @@ nominal_beam_energy = 1370;
 
 load(fullfile('test_data','temp_matrices.mat'))
 
+respm_profiles = [];%diag(corr_steps);
+bumps = (blkdiag(pinv(Mh),pinv(Mv))*([[zeros(1,16) -1 1 zeros(1,32)]; [zeros(1,16) 1 1 zeros(1,32)]; [zeros(1,41) -1 1 zeros(1,7)]; [zeros(1,41) 1 1 zeros(1,7)]])')';
+
 if false % FIXME
     [hbpm,hsv,hcorr] = svd(Mh);
     [vbpm,vsv,vcorr] = svd(Mv);
@@ -20,7 +23,7 @@ if false % FIXME
     profv = invvsv'*vcorr';
     
     profh = profh(1:min(size(profh)), 1:min(size(profh)))*0.5;
-    profv = profv(1:min(size(profv)), 1:min(size(profv)))*0.05;
+    profv = profv(1:min(size(profv)), 1:min(size(profv)))*0.5;
     
     bpm_singular_vectors = blkdiag(profh, profv);
 else
@@ -30,15 +33,16 @@ end
 manual_settings_array = {...
     %{'beam energy = 500 MeV', 500}, ...
     %{'beam energy = 1.37 GeV, IDs = open, SCW = 0.2 T', 1370}, ...
-    {'AWG01 = closed, AON11 gap = 29.3 mm, AON11 phase = -15 mm, SCW = 3.5 T, user condition (correct tune, coupling, etc.)', 1370}, ...
+    {'AWG01 = closed, AON11 gap = 22 mm, AON11 phase = -25 mm, SCW = 3.5 T, user condition (correct tune, coupling, etc.)', 1370}, ...
     %{'SCW = 0.2 T, beam current = 30 mA', 1370}, ...
     %{'LT + booster + SR sexts = off', 1370}, ...
     };
 
 nrepetitions = 1;
 exp_descriptions_array = {...
-    {'step', 0.1086}, ...
-    %{'prbs', 0.1, [0 1]}, ...
+    %{'step', 0.1}, ...
+    {'ramp', 0.5}, ...
+    %{'prbs', 0.1, [0 1/3]}, ...
     %{'sine', 0.1, [10 500]*2*Ts, [30 2 1]}, ...
     };
 
@@ -72,29 +76,29 @@ for j=1:length(exp_descriptions)
         
         expinfo.Ts = Ts;
         expinfo.ncols = 50;
-        expinfo.duration = 200;
+        expinfo.duration = 100;
         expinfo.nperiods = 1;
         expinfo.pauselength = 10;
         expinfo.mode = 'corr_sum';
-        expinfo.profiles = [diag(corr_steps); bpm_singular_vectors];
+        expinfo.profiles = [respm_profiles; bpm_singular_vectors; bumps];
         
         if strcmpi(expinfo.excitation, 'prbs')
-            expinfo.nperiods = 50;
             expinfo.duration = 1000;
+            expinfo.prbsperiod = 45;
         end
         
         if strcmpi(expinfo.excitation, 'sine')
             expinfo.sinedata = exp_descriptions{j}{4};
         end
         
-        if strcmpi(expinfo.excitation, 'step')
+        if strcmpi(expinfo.excitation, 'step') || strcmpi(expinfo.excitation, 'ramp')
             expinfo.uncorrelated = false;
             expinfo.band = [];
         else
             expinfo.uncorrelated = true;
             expinfo.band = exp_descriptions{j}{3};
         end
-        
+
         stopat = (expinfo.duration+expinfo.pauselength)*(size(expinfo.profiles, 1) + 1)*nrepetitions;
         if strcmpi(ip, '10.0.5.31')
             fclog(fclog_filename, expinfo, npts_packet, stopat);

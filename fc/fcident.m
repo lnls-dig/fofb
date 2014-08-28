@@ -9,11 +9,16 @@ if ischar(varargin{1}) && strcmpi(varargin{1}, 'init')
     if strcmpi(expinfo.excitation, 'step')
         step_duration = expinfo.duration/2;
         fcdata = [-ones(npts_packet*floor(step_duration), expinfo.ncols); ones(npts_packet*ceil(step_duration), expinfo.ncols)];
+    elseif strcmpi(expinfo.excitation, 'ramp')
+        ramp_duration = expinfo.duration/2;
+        fcdata = [repmat(linspace(0,1,npts_packet*floor(ramp_duration))', 1, expinfo.ncols); repmat(linspace(1,0,npts_packet*floor(ramp_duration))', 1, expinfo.ncols);];
     elseif strcmpi(expinfo.excitation, 'sine')
         [fcdata, expout.freqs] = idinput([npts_packet*expinfo.duration expinfo.ncols expinfo.nperiods], 'sine', expinfo.band, [-1 1], expinfo.sinedata);
     else
-        fcdata = idinput([floor(2*npts_packet*expinfo.duration/expinfo.nperiods) expinfo.ncols expinfo.nperiods], expinfo.excitation, expinfo.band, [-1 1]); % FIXME
-        fcdata = fcdata(1:floor(npts_packet*expinfo.duration/2047)*2047,:); % FIXME
+        fcdata = idinput([expinfo.prbsperiod expinfo.ncols floor(expinfo.duration*npts_packet/expinfo.prbsperiod)], expinfo.excitation, expinfo.band, [-1 1]); % FIXME
+        if strcmpi(expinfo.excitation, 'prbs')
+            fcdata = fcdata(1:floor(npts_packet*expinfo.duration/expinfo.prbsperiod)*expinfo.prbsperiod,:);
+        end
         fcdata = [fcdata; zeros(npts_packet*expinfo.duration - size(fcdata,1), size(fcdata,2))];
     end
     
