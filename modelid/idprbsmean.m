@@ -8,6 +8,9 @@ if nargin < 4 || isempty(avgon)
     avgon = true;
 end
 
+    sysid_data_array_id = sysid_data_array;
+    sysid_data_array_val = sysid_data_array;
+
 for i=1:length(sysid_data_array)
     sysid_data = sysid_data_array{i};
     npts = size(sysid_data, 1);
