@@ -14,6 +14,8 @@ betax = twiss.betax;
 betay = twiss.betay;
 sigmax = sqrt(eqp.naturalEmittance*betax + (eqp.naturalEnergySpread*twiss.etax).^2);
 sigmay = sqrt(coupling*eqp.naturalEmittance*betay);
+sigmax_ = sqrt(eqp.naturalEmittance./betax + (eqp.naturalEnergySpread*twiss.etax).^2);
+sigmay_ = sqrt(coupling*eqp.naturalEmittance./betay);
 fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
 
 
@@ -26,3 +28,7 @@ light_source_points =  sort([mc id_points]);
 figure;
 plot(light_source_points, [sigmax(light_source_points) sigmay(light_source_points)]);
 hold on; plot(id_points,  [sigmax(id_points) sigmay(id_points)],'o');
+
+figure;
+plot(light_source_points, [sigmax_(light_source_points) sigmay_(light_source_points)]);
+hold on; plot(id_points,  [sigmax_(id_points) sigmay_(id_points)],'o');
