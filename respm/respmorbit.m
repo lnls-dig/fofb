@@ -13,7 +13,7 @@ end
 % Response matrix: orbit vs. corrector kicks
 if isfield(markers, 'corr') && ~isempty(markers.corr)
     fprintf('   Response matrix: orbit vs. corrector magnet kicks\n'); tic;
-    Mcorr_ = respmcorr(THERING, markers.orbit, markers.corr, cellstr(repmat(plane,length(markers.corr),1)));
+    Mcorr_ = respmcorr(THERING, markers.orbit, markers.corr, plane);
     Mcorr.pos = Mcorr_(:,:,index_pos);
     Mcorr.ang = Mcorr_(:,:,index_ang);
     fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
@@ -57,7 +57,7 @@ if isfield(markers, 'ss') && ~isempty(markers.ss)
         THERING{markers.ss(i)}.KickAngle(2) = 0;
     end
     
-    Mss_ = respmcorr(THERING, markers.orbit, markers.ss, cellstr(repmat(plane,length(markers.corr),1)));
+    Mss_ = respmcorr(THERING, markers.orbit, markers.ss, plane);
     Mss.pos = Mss_(:,:,index_pos);
     Mss.ang = Mss_(:,:,index_ang);
     
