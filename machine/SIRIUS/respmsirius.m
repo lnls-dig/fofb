@@ -32,6 +32,9 @@ global THERING;
 % sirius;
 % setoperationalmode(1);
 
+setcavity('on');
+setradiation('on');
+
 fprintf('\n   -------------------------------\n    Starting "sirius_orbit_respm"\n   -------------------------------\n');
 
 % Markers
