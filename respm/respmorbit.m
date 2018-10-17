@@ -22,15 +22,11 @@ else
 end
 
 % Response matrix: orbit vs. RF frequency
-if isfield(markers, 'rf') && ~isempty(markers.rf)
-    fprintf('   Response matrix: orbit vs. RF frequency\n'); tic;
-    Mrf_ = respmrf(THERING, markers.orbit, markers.rf);
-    Mrf.pos = Mrf_(:,:,index_pos);
-    Mrf.ang = Mrf_(:,:,index_ang);
-    fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
-else
-    Mrf = [];
-end
+fprintf('   Response matrix: orbit vs. RF frequency\n'); tic;
+Mrf_ = respmrf(THERING, markers.orbit);
+Mrf.pos = Mrf_(:,:,index_pos);
+Mrf.ang = Mrf_(:,:,index_ang);
+fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
 
 % Response matrix: orbit vs. magnet's displacements
 if isfield(markers, 'disp') && ~isempty(markers.disp)
