@@ -9,7 +9,7 @@ M = zeros(n_orbit_points, n_elements, 4);
 
 TR0 = THERING;
 for i=1:n_elements
-    if strcmpi(plane{i}, 'h')
+    if strcmpi(plane{i}, 'x')
         lnls_add_misalignment = @lnls_add_misalignmentX;
     else
         lnls_add_misalignment = @lnls_add_misalignmentY;
