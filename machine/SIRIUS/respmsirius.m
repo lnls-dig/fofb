@@ -1,59 +1,26 @@
-function [Mcorr, Mss, Mdisp, Mrf] = respmsirius(plane)
+function r = respmsirius
 %RESPMSIRIUS Orbit response matrices and disturbance matrices.
-%   M = fofb_orbit_respm_sirius(THERING) calculates Sirius's orbit response
-%   matrices in 4-D transverse phase space:
-%
-%           corrector magnet kicks inputs [rad]
-%           RF frequency steps inputs [Hz]
-%           insertion device residual dipolar field disturbance [rad]
-%           quadrupoles displacements [m]
-%           bending magnets displacements [m]
-%
-%   Inputs:
-%       THERING: AT accelerator model of Sirius ring
-%
-%   Outputs:
-%       M: 
-%
-%   All response matrices are 3-D matrices where each dimension has the
-%   following meaning:
-%       Dim 1: index of beam orbit value in a given ring position
-%       Dim 2: index of input or disturbance affecting the beam orbit
-%       Dim 3: 4-D transverse phase space variable: 
-%              1 = horizontal beam position [m]
-%              2 = horizontal beam angle [rad]
-%              3 = vertical beam position [m]
-%              4 = vertical beam angle [rad]
-%
-%   *** FIXME: must include explanation about chosen orbit points; return
-%   orbit point indexes, input and disturbance indexes ***
+%   r = fofb_orbit_respm_sirius
 
 global THERING;
-% sirius;
-% setoperationalmode(1);
-
-setcavity('on');
-setradiation('on');
-
-fprintf('\n   -------------------------------\n    Starting "sirius_orbit_respm"\n   -------------------------------\n');
 
 % Markers
 family_data = sirius_si_family_data(THERING);
 
 % Insertion devices
-mc = findcells(THERING, 'FamName', 'mc')';
-mia  = findcells(THERING, 'FamName', 'mia')';
-mib  = findcells(THERING, 'FamName', 'mib')';
-mip  = findcells(THERING, 'FamName', 'mip')';
+mc  = findcells(THERING, 'FamName', 'mc')';
+mia = findcells(THERING, 'FamName', 'mia')';
+mib = findcells(THERING, 'FamName', 'mib')';
+mip = findcells(THERING, 'FamName', 'mip')';
 
 % Quadrupoles
 qfa  = findcells(THERING, 'FamName', 'QFA')';
 qfb  = findcells(THERING, 'FamName', 'QFB')';
 qfp  = findcells(THERING, 'FamName', 'QFP')';
-qda = findcells(THERING, 'FamName', 'QDA')';
+qda  = findcells(THERING, 'FamName', 'QDA')';
 qdb1 = findcells(THERING, 'FamName', 'QDB1')';
 qdb2 = findcells(THERING, 'FamName', 'QDB2')';
-qdp1  = findcells(THERING, 'FamName', 'QDP1')';
+qdp1 = findcells(THERING, 'FamName', 'QDP1')';
 qdp2 = findcells(THERING, 'FamName', 'QDP2')';
 qf1  = findcells(THERING, 'FamName', 'Q1')';
 qf2  = findcells(THERING, 'FamName', 'Q2')';
@@ -71,25 +38,48 @@ b1 = reshape(b1, [], 20)';
 b2 = reshape(b2, [], 20)';
 
 % BPMs
-bpm = sort(family_data.BPM.ATIndex);
+bpm_id = sort([findcells(THERING, 'FamName', 'id_enda') findcells(THERING, 'FamName', 'id_endb') findcells(THERING, 'FamName', 'id_endp')])';
+bpm_ring = sort(family_data.BPM.ATIndex);
+bpm = sort([bpm_id bpm_ring]);
 
 % Orbit correctors
-fhcm = sort(family_data.FCH.ATIndex);
-fvcm = sort(family_data.FCV.ATIndex);
-hcm = sort(family_data.CH.ATIndex);
-vcm = sort(family_data.CV.ATIndex);
+hcm_slow = sort(family_data.CH.ATIndex);
+vcm_slow = sort(family_data.CV.ATIndex);
+hcm_fast = sort([family_data.FC1.ATIndex; family_data.FC2.ATIndex]);
+vcm_fast = hcm_fast;
 
-bpm = findcells(THERING, 'FamName', 'BPM')';
 id = sort([mia; mib; mip]);
-source =  sort([mc; id]);
+light_source =  sort([mc; id]);
 quad = sort([qda; qfa; qdb1; qdb2; qfb; qf1; qf2; qf3; qf4; qfp; qdp1; qdp2]);
-dipole = sort([bc b1 b2])';
+%dipole = sort([bc b1 b2])';
 
-markers = struct( ...
-    'orbit', bpm, ...
-    'corr', hcm, ...
-    'ss', id, ...
-    'disp', quad ...
-);
+[r.bpm.sofb.Mx, r.bpm.sofb.Mx_] = respmcorr(bpm, hcm_slow, 'x');
+[r.bpm.sofb.My, r.bpm.sofb.My] = respmcorr(bpm, vcm_slow, 'y');
+[r.bpm.fofb.Mx, r.bpm.fofb.Mx_] = respmcorr(bpm, hcm_fast, 'x');
+[r.bpm.fofb.My, r.bpm.fofb.My_] = respmcorr(bpm, vcm_fast, 'y');
+[r.bpm.dist.id.Mx, r.bpm.dist.id.Mx_] = respmdisp(bpm, id, 'x');
+[r.bpm.dist.id.My, r.bpm.dist.id.My_] = respmdisp(bpm, id, 'y');
+[r.bpm.dist.misalign.quad.Mx, r.bpm.dist.misalign.quad.Mx_] = respmdisp(bpm, quad , 'x');
+[r.bpm.dist.misalign.quad.My, r.bpm.dist.misalign.quad.My_] = respmdisp(bpm, quad , 'y');
+[r.bpm.dist.rf.M, r.bpm.dist.rf.M_] = respmrf (bpm);
 
-[Mcorr, Mss, Mdisp, Mrf] = respmorbit(THERING, markers, plane);
+[r.light_source.sofb.Mx, r.light_source.sofb.Mx_] = respmcorr(light_source, hcm_slow, 'x');
+[r.light_source.sofb.My, r.light_source.sofb.My] = respmcorr(light_source, vcm_slow, 'y');
+[r.light_source.fofb.Mx, r.light_source.fofb.Mx_] = respmcorr(light_source, hcm_fast, 'x');
+[r.light_source.fofb.My, r.light_source.fofb.My_] = respmcorr(light_source, vcm_fast, 'y');
+[r.light_source.dist.id.Mx, r.light_source.dist.id.Mx_] = respmdisp(light_source, id, 'x');
+[r.light_source.dist.id.My, r.light_source.dist.id.My_] = respmdisp(light_source, id, 'y');
+[r.light_source.dist.misalign.quad.Mx, r.light_source.dist.misalign.quad.Mx_] = respmdisp(light_source, quad , 'x');
+[r.light_source.dist.misalign.quad.My, r.light_source.dist.misalign.quad.My_] = respmdisp(light_source, quad , 'y');
+[r.light_source.dist.rf.M, r.light_source.dist.rf.M_] = respmrf (light_source);
+
+% fprintf('\n   -------------------------------\n    Starting "sirius_orbit_respm"\n   -------------------------------\n');
+% % Response matrix: orbit vs. corrector kicks
+%         fprintf('   Response matrix: orbit vs. corrector magnet kicks...\n'); tic;
+%         % Response matrix: orbit vs. RF frequency
+%         fprintf('   Response matrix: orbit vs. RF frequency...\n'); tic;
+%         % Response matrix: orbit vs. magnet's displacements
+%         fprintf('   Response matrix: orbit vs. magnets'' displacements...\n'); tic;
+%         % Response matrix: orbit vs. ID disturbance
+%         fprintf('   Response matrix: orbit vs. ID disturbance...\n'); tic;
+% fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
