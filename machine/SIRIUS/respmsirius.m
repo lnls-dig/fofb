@@ -40,7 +40,7 @@ b2 = reshape(b2, [], 20)';
 % BPMs
 bpm_id = sort([findcells(THERING, 'FamName', 'id_enda') findcells(THERING, 'FamName', 'id_endb') findcells(THERING, 'FamName', 'id_endp')])';
 bpm_ring = sort(family_data.BPM.ATIndex);
-bpm = sort([bpm_id bpm_ring]);
+bpm = sort([bpm_id; bpm_ring]);
 
 % Orbit correctors
 hcm_slow = sort(family_data.CH.ATIndex);
