@@ -54,7 +54,7 @@ quad = sort([qda; qfa; qdb1; qdb2; qfb; qf1; qf2; qf3; qf4; qfp; qdp1; qdp2]);
 %dipole = sort([bc b1 b2])';
 
 [r.bpm.sofb.Mx, r.bpm.sofb.Mx_] = respmcorr(bpm, hcm_slow, 'x');
-[r.bpm.sofb.My, r.bpm.sofb.My] = respmcorr(bpm, vcm_slow, 'y');
+[r.bpm.sofb.My, r.bpm.sofb.My_] = respmcorr(bpm, vcm_slow, 'y');
 [r.bpm.fofb.Mx, r.bpm.fofb.Mx_] = respmcorr(bpm, hcm_fast, 'x');
 [r.bpm.fofb.My, r.bpm.fofb.My_] = respmcorr(bpm, vcm_fast, 'y');
 [r.bpm.dist.id.Mx, r.bpm.dist.id.Mx_] = respmdisp(bpm, id, 'x');
@@ -64,7 +64,7 @@ quad = sort([qda; qfa; qdb1; qdb2; qfb; qf1; qf2; qf3; qf4; qfp; qdp1; qdp2]);
 [r.bpm.dist.rf.M, r.bpm.dist.rf.M_] = respmrf (bpm);
 
 [r.light_source.sofb.Mx, r.light_source.sofb.Mx_] = respmcorr(light_source, hcm_slow, 'x');
-[r.light_source.sofb.My, r.light_source.sofb.My] = respmcorr(light_source, vcm_slow, 'y');
+[r.light_source.sofb.My, r.light_source.sofb.My_] = respmcorr(light_source, vcm_slow, 'y');
 [r.light_source.fofb.Mx, r.light_source.fofb.Mx_] = respmcorr(light_source, hcm_fast, 'x');
 [r.light_source.fofb.My, r.light_source.fofb.My_] = respmcorr(light_source, vcm_fast, 'y');
 [r.light_source.dist.id.Mx, r.light_source.dist.id.Mx_] = respmdisp(light_source, id, 'x');
