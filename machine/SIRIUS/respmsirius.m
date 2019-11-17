@@ -1,51 +1,16 @@
 function [Mcorr, Mss, Mdisp, Mrf] = respmsirius(plane)
 %RESPMSIRIUS Orbit response matrices and disturbance matrices.
-%   M = fofb_orbit_respm_sirius(THERING) calculates Sirius's orbit response
-%   matrices in 4-D transverse phase space:
-%
-%           corrector magnet kicks inputs [rad]
-%           RF frequency steps inputs [Hz]
-%           insertion device residual dipolar field disturbance [rad]
-%           quadrupoles displacements [m]
-%           bending magnets displacements [m]
-%
-%   Inputs:
-%       THERING: AT accelerator model of Sirius ring
-%
-%   Outputs:
-%       M: 
-%
-%   All response matrices are 3-D matrices where each dimension has the
-%   following meaning:
-%       Dim 1: index of beam orbit value in a given ring position
-%       Dim 2: index of input or disturbance affecting the beam orbit
-%       Dim 3: 4-D transverse phase space variable: 
-%              1 = horizontal beam position [m]
-%              2 = horizontal beam angle [rad]
-%              3 = vertical beam position [m]
-%              4 = vertical beam angle [rad]
-%
-%   *** FIXME: must include explanation about chosen orbit points; return
-%   orbit point indexes, input and disturbance indexes ***
+%   r = fofb_orbit_respm_sirius
 
 global THERING;
-% sirius;
-% setoperationalmode(1);
-
-fprintf('\n   -------------------------------\n    Starting "sirius_orbit_respm"\n   -------------------------------\n');
-
-% Dipoles segmentation numbers
-nsegs_bc = 2;
-nsegs_b1 = 2;
-nsegs_b2 = 2;
-nsegs_b3 = 2;
 
 % Markers
 
 % Insertion devices
-mc = findcells(THERING, 'FamName', 'mc')';
-mia  = findcells(THERING, 'FamName', 'mia')';
-mib  = findcells(THERING, 'FamName', 'mib')';
+mc  = findcells(THERING, 'FamName', 'mc')';
+mia = findcells(THERING, 'FamName', 'mia')';
+mib = findcells(THERING, 'FamName', 'mib')';
+mip = findcells(THERING, 'FamName', 'mip')';
 
 % Quadrupoles
 QDA  = findcells(THERING, 'FamName', 'QDA')';
@@ -83,44 +48,38 @@ SFB2_CV = SFB2(1:2:end);
 % Dedicated vertical correctors
 CV = findcells(THERING, 'FamName', 'CV')';
 
-% Dedicated vertical correctors
+% Dedicated fast correctors
 FC1 = findcells(THERING, 'FamName', 'FC1')';
 FC2 = findcells(THERING, 'FamName', 'FC2')';
 
 % Dipoles
-bc = findcells(THERING, 'FamName', 'bc')';
-b1 = findcells(THERING, 'FamName', 'b1')';
-b2 = findcells(THERING, 'FamName', 'b2')';
-b3 = findcells(THERING, 'FamName', 'b3')';
+bc = sort([findcells(THERING, 'FamName', 'BC') findcells(THERING, 'FamName', 'BC_EDGE')]);
+b1 = sort([findcells(THERING, 'FamName', 'B1') findcells(THERING, 'FamName', 'B1_EDGE')]);
+b2 = sort([findcells(THERING, 'FamName', 'B2') findcells(THERING, 'FamName', 'B2_EDGE')]);
 
 % Takes dipole segmentation into account
-bc = reshape(bc, nsegs_bc, []);
-b1 = reshape(b1, nsegs_b1, []);
-b2 = reshape(b2, nsegs_b2, []);
-b3 = reshape(b3, nsegs_b3, []);
+bc = reshape(bc, [], 20)';
+b1 = reshape(b1, [], 20)';
+b2 = reshape(b2, [], 20)';
+
+
+% Orbit correctors
 
 bpm = findcells(THERING, 'FamName', 'BPM')';
-id = sort([mia; mib]);
+id = sort([mia; mib; mip]);
 source =  sort([mc; id]);
 hcm = sort([SDA0; SDA1; SDB1; SFB0; SFP0; SDP1; SFP2; SFA2; SFB2_CH]);
 vcm = sort([SDA0; SDA1; SDB1; SFB0; SFP0; SDP1; SFP2; SDA3; SDB3; SDP3; SFB2_CV; CV]);
 crhv = sort([FC1; FC2]);
 quad = sort([QDA; QFA; QDB1; QDB2; QFB; Q1; Q2; Q3; Q4]);
-dipole = sort([bc b1 b2 b3])';
+%dipole = sort([bc b1 b2])';
 rf = findcells(THERING, 'FamName', 'cav')';
 
-if strcmpi(plane, 'h')
-    cm = hcm;
-elseif strcmpi(plane, 'v')
-    cm = vcm;
-end
-
 markers = struct( ...
-    'orbit', source, ...
-    'corr', crhv, ...
+    'orbit', bpm, ...
+    'corr', hcm, ...
     'ss', id, ...
-    'disp', quad, ...
-    'rf', rf ...
+    'disp', quad ...
 );
 
 [Mcorr, Mss, Mdisp, Mrf] = respmorbit(THERING, markers, plane);

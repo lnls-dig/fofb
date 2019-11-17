@@ -1,6 +1,8 @@
-function M = respmcorr(THERING, orbit_points, indexes, plane)
+function M = respmcorr(THERING, orbit_points, indexes, plane, delta_exc)
 
-delta_exc = 1e-5;
+if nargin < 5 || isempty(delta_exc)
+    delta_exc = 1e-5;
+end
 
 n_orbit_points = length(orbit_points);
 
