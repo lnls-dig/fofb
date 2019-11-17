@@ -1,4 +1,5 @@
-path = '/media/DIG/Projetos/Ativos/DT_FOFB_LNLS/Dados_FOFB/dados_FOFB/';
+function facopyfiles(path, filenames)
+
 for i=1:length(filenames)
     [~, name, ext] = fileparts(filenames{i});
     copyfile(filenames{i}, 'temp.dat');

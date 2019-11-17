@@ -15,21 +15,11 @@ for i=1:nelements
         planecorr = 'CV';
     end
     
-    if isfield(THERING{indexes(i,:)}, 'KickAngle')
-        original_kick = THERING{indexes(i,:)}.KickAngle(planenum);
-        THERING{indexes(i,:)}.KickAngle(planenum) = original_kick - (delta_exc/2);
-        orbit1 = findorbit4(THERING, 0, orbit_points);
-        THERING{indexes(i,:)}.KickAngle(planenum) = original_kick + (delta_exc/2);
-        orbit2 = findorbit4(THERING, 0, orbit_points);
-        THERING{indexes(i,:)}.KickAngle(planenum) = original_kick;
-    elseif isfield(THERING{indexes(i,:)}, 'CH') || isfield(THERING{indexes(i,:)}, 'CV')
-        original_kick = THERING{indexes(i,:)}.(planecorr);
-        THERING{indexes(i,:)}.(planecorr) = original_kick - (delta_exc/2);
-        orbit1 = findorbit4(THERING, 0, orbit_points);
-        THERING{indexes(i,:)}.(planecorr) = original_kick + (delta_exc/2);
-        orbit2 = findorbit4(THERING, 0, orbit_points);
-        THERING{indexes(i,:)}.(planecorr) = original_kick;
-    end
-
+    original_kick = lnls_get_kickangle(THERING, indexes, plane);
+    THERING = lnls_set_kickangle(THERING, original_kick(i)-delta_exc/2, indexes(i), plane);
+    orbit1 = findorbit4(THERING, 0, orbit_points);
+    THERING = lnls_set_kickangle(THERING, original_kick(i)+delta_exc/2, indexes(i), plane);
+    orbit2 = findorbit4(THERING, 0, orbit_points);
     M(:,i,:)  = (orbit2 - orbit1)'/delta_exc;
+    THERING = lnls_set_kickangle(THERING, original_kick(i), indexes(i), plane);
 end

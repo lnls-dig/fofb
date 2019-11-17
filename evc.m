@@ -12,6 +12,8 @@ end
 C = (S*R)';
 
 invA = pinv(R'*R, tol);
+
 aux1 = C'*invA;
 aux2 = invA*(C/(aux1*C));
+
 invR = aux2*S-(-invA+aux2*aux1)*R';

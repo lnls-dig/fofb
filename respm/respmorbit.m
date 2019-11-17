@@ -1,17 +1,19 @@
 function [Mcorr, Mss, Mdisp, Mrf] = respmorbit(THERING, markers, plane)
 
-if strcmpi(plane, 'h')
+if strcmpi(plane, 'x')
     index_pos = 1;
     index_ang = 2;
-else
+elseif strcmpi(plane, 'y')
     index_pos = 3;
     index_ang = 4;
+else
+    error('Value assigned to plane is not valid');
 end
 
 % Response matrix: orbit vs. corrector kicks
 if isfield(markers, 'corr') && ~isempty(markers.corr)
     fprintf('   Response matrix: orbit vs. corrector magnet kicks\n'); tic;
-    Mcorr_ = respmcorr(THERING, markers.orbit, markers.corr, cellstr(repmat(plane,length(markers.corr),1)));
+    Mcorr_ = respmcorr(THERING, markers.orbit, markers.corr, plane);
     Mcorr.pos = Mcorr_(:,:,index_pos);
     Mcorr.ang = Mcorr_(:,:,index_ang);
     fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
@@ -20,15 +22,11 @@ else
 end
 
 % Response matrix: orbit vs. RF frequency
-if isfield(markers, 'rf') && ~isempty(markers.rf)
-    fprintf('   Response matrix: orbit vs. RF frequency\n'); tic;
-    Mrf_ = respmrf(THERING, markers.orbit, markers.rf);
-    Mrf.pos = Mrf_(:,:,index_pos);
-    Mrf.ang = Mrf_(:,:,index_ang);
-    fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
-else
-    Mrf = [];
-end
+fprintf('   Response matrix: orbit vs. RF frequency\n'); tic;
+Mrf_ = respmrf(THERING, markers.orbit);
+Mrf.pos = Mrf_(:,:,index_pos);
+Mrf.ang = Mrf_(:,:,index_ang);
+fprintf('   Done. Elapsed time: %0.3f s\n\n', toc);
 
 % Response matrix: orbit vs. magnet's displacements
 if isfield(markers, 'disp') && ~isempty(markers.disp)
@@ -55,7 +53,7 @@ if isfield(markers, 'ss') && ~isempty(markers.ss)
         THERING{markers.ss(i)}.KickAngle(2) = 0;
     end
     
-    Mss_ = respmcorr(THERING, markers.orbit, markers.ss, cellstr(repmat(plane,length(markers.corr),1)));
+    Mss_ = respmcorr(THERING, markers.orbit, markers.ss, plane);
     Mss.pos = Mss_(:,:,index_pos);
     Mss.ang = Mss_(:,:,index_ang);
     
