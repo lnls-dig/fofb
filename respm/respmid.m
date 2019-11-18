@@ -1,19 +1,20 @@
-function [M, M_] = respmid(orbit_points, indexes, plane)
+function M = respmid(ring, orbit_indexes, id_indexes, plane, delta_kick)
 
-global THERING;
+n = length(id_indexes);
 
-nss = length(indexes);
-
-original_PassMethod = cell(nss,1);
-for i=1:nss
-    original_PassMethod{i} = THERING{indexes(i)}.PassMethod;
-    THERING{indexes(i)}.PassMethod = 'CorrectorPass';
-    THERING{indexes(i)}.KickAngle(1) = 0;
-    THERING{indexes(i)}.KickAngle(2) = 0;
+if nargin < 5 || isempty(delta_kick)
+    delta_kick = 1e-6;
 end
 
-[M, M_] = respmcorr(THERING, orbit_points, indexes, plane);
+original_PassMethod = cell(n,1);
+for i=1:n
+    original_PassMethod{i} = ring{id_indexes(i)}.PassMethod;
+    ring{id_indexes(i)}.PassMethod = 'CorrectorPass';
+    ring{id_indexes(i)}.KickAngle = [0 0];
+end
 
-for i=1:nss
-    THERING{indexes(i)}.PassMethod = original_PassMethod;
+M = respmcorr(ring, orbit_indexes, id_indexes, plane, delta_kick);
+
+for i=1:n
+    ring{id_indexes(i)}.PassMethod = original_PassMethod;
 end
