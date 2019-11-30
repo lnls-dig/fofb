@@ -1,0 +1,28 @@
+function M = respmtheor(beta, mu, eta, alpha, L, tune, orbit_indexes, corr_indexes)
+
+% Relative phase advances among each orbit and corrector (or dipolar field) points
+ph_orbit = repmat(mu(orbit_indexes), 1, length(corr_indexes));
+ph_corr = repmat(mu(corr_indexes)', length(orbit_indexes), 1);
+ph_orbit_minus_corr = ph_orbit-ph_corr;
+
+% Adjust phase differences in such a way that there are no jumps greater than pi,
+% for every row and every column
+diff_ = fix(diff(ph_orbit_minus_corr)/pi);
+ph_orbit_minus_corr = ph_orbit_minus_corr - cumsum([zeros(1,size(diff_,2)); diff_*pi]);
+diff_ = fix(diff(ph_orbit_minus_corr')/pi);
+ph_orbit_minus_corr = (ph_orbit_minus_corr' - cumsum([zeros(1,size(diff_,2)); diff_*pi]))';
+
+% Dispersive orbit term
+eta_orbit = repmat(eta(orbit_indexes), 1, length(corr_indexes));
+eta_corr = repmat(eta(corr_indexes)', length(orbit_indexes), 1);
+dispersive_orbit = eta_orbit.*eta_corr/alpha/L;
+
+% Betatron "modulation"
+ph = pi*tune - abs(ph_orbit_minus_corr);
+sqrt_beta_bpm = diag(sqrt(beta(orbit_indexes)));
+sqrt_beta_cm = diag(sqrt(beta(corr_indexes)));
+
+% Gain
+gain = 1/2/sin(pi*tune);
+
+M = gain*sqrt_beta_bpm*cos(ph)*sqrt_beta_cm + dispersive_orbit;
