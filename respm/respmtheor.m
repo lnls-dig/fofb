@@ -11,7 +11,8 @@ eta_corr = repmat(eta(corr_indexes)', length(orbit_indexes), 1);
 dispersive_orbit = eta_orbit.*eta_corr/alpha/L;
 
 % Build response matrix
-% Betatron "modulation"
+
+% Betatron phase advance term
 M = cos(pi*tune - abs(ph_orbit_minus_corr));
 
 % Tune term
