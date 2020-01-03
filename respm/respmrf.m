@@ -1,10 +1,10 @@
 function M = respmrf(ring, orbit_points, rf_index)
 
-original_cavity_status = getcavity;
-setcavity('on');
-setradiation('on');
+dp = 1e-9;
+alphac = mcf(ring);
 
-M = findrespm(ring, orbit_points, rf_index, 1, 'Frequency', 1,1, 'findorbit6');
+freq = ring{rf_index}.Frequency;
 
-setradiation('off'); % FIXME: should set radiation to previous state heve. However, there's no "getradiation" function yet to retrieve current state
-setcavity(original_cavity_status);
+orbit = findorbit4(ring,dp,1:length(ring)+1);
+M_array = -orbit(:,orbit_points)'/dp/alphac/freq;
+M = {M_array(:,1) M_array(:,2) M_array(:,3) M_array(:,4)};
