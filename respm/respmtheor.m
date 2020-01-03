@@ -5,13 +5,6 @@ ph_orbit = repmat(mu(orbit_indexes), 1, length(corr_indexes));
 ph_corr = repmat(mu(corr_indexes)', length(orbit_indexes), 1);
 ph_orbit_minus_corr = ph_orbit-ph_corr;
 
-% Adjust phase differences in such a way that there are no jumps greater than pi,
-% for every row and every column
-diff_ = fix(diff(ph_orbit_minus_corr)/pi);
-ph_orbit_minus_corr = ph_orbit_minus_corr - cumsum([zeros(1,size(diff_,2)); diff_*pi]);
-diff_ = fix(diff(ph_orbit_minus_corr')/pi);
-ph_orbit_minus_corr = (ph_orbit_minus_corr' - cumsum([zeros(1,size(diff_,2)); diff_*pi]))';
-
 % Dispersive orbit term
 eta_orbit = repmat(eta(orbit_indexes), 1, length(corr_indexes));
 eta_corr = repmat(eta(corr_indexes)', length(orbit_indexes), 1);
