@@ -69,10 +69,13 @@ for j=1:length(corr_indexes)
     M(:,j) = M(:,j).*sqrt_beta_orbit;
 end
 
-% Dispersive orbit term
+% Dispersive orbit term and additional treatments
 if strcmpi(type, 'static')
     M = M + dispersive_orbit;
 elseif strcmpi(type, 'dynamic')
+    M = ss(M);
+    M = balred(M, 2);
+    
     % TODO: include dispersive orbit dynamic response
     M = M + dispersive_orbit;
 end
