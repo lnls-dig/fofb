@@ -25,17 +25,17 @@ ncvs_total = ncv_sec*nsec_total;
 nfcs_total = nfc_sec*nsec_total;
 
 if strcmpi(plane, 'h')
-    bpm_idx = [nbpms_total 1:nbpms-1];
-    corr_idx_s = [nchs_total 1:nchs-1];
-    corr_idx_f = [nfcs_total 1:nfcs-1];
-    sel_bpm_f = sort([1:nbpm_sec:nbpms 2:nbpm_sec:nbpms]);
-    sel_corr_f = sort([1:nfc_sec:nfcs 2:nfc_sec:nfcs]);
+    bpm_idx = [1:nbpms-1 nbpms_total];
+    corr_idx_s = [1:nchs-1 nchs_total];
+    corr_idx_f = [1:nfcs-1 nfcs_total];
+    sel_bpm_f = [sort([nbpm_sec:nbpm_sec:nbpms-1 1:nbpm_sec:nbpms-1]) length(bpm_idx)];
+    sel_corr_f = [sort([nfc_sec:nfc_sec:nfcs-1 1:nfc_sec:nfcs-1]) length(corr_idx_f)];
 elseif strcmpi(plane, 'v')
-    bpm_idx = nbpms_total + [nbpms_total 1:nbpms-1];
-    corr_idx_s = nchs_total + [ncvs_total 1:ncvs-1];
-    corr_idx_f = nfcs_total + [nfcs_total 1:nfcs-1];
-    sel_bpm_f = sort([1:nbpm_sec:nbpms 2:nbpm_sec:nbpms]);
-    sel_corr_f = sort([1:nfc_sec:nfcs 2:nfc_sec:nfcs]);
+    bpm_idx = nbpms_total + [1:nbpms-1 nbpms_total];
+    corr_idx_s = nchs_total + [1:ncvs-1 ncvs_total];
+    corr_idx_f = nfcs_total + [1:nfcs-1 nfcs_total];
+    sel_bpm_f = [sort([nbpm_sec:nbpm_sec:nbpms-1 1:nbpm_sec:nbpms-1]) length(bpm_idx)];
+    sel_corr_f = [sort([nfc_sec:nfc_sec:nfcs-1 1:nfc_sec:nfcs-1]) length(corr_idx_f)];
 end
 
 if include_rf
