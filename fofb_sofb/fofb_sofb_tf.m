@@ -20,7 +20,10 @@ for i=1:length(param)
     C{i} = tf(param(i).Ki,[1 0])*Mc{i};
     H{i} = param(i).H*eye(nbpms);
     D{i} = ss([],[],[],M{i}/norm(M{i}));
-    
+
+    % Limit low frequency gain of integrator to avoid numerical issues
+    C{i} = C{i}*tf([1 0],[1 2*pi*1e-12]);
+
     param_char = param(i).char;
     
     % Port names
