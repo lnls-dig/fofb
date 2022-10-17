@@ -33,8 +33,8 @@ elseif strcmpi(plane, 'v')
     corr_idx_s = nchs_total + [1:ncvs-1 ncvs_total];
     corr_idx_f = nfcs_total + [1:nfcs-1 nfcs_total];
 end
-sel_bpm_f = [sort([nbpm_sec:nbpm_sec:nbpms-1 1:nbpm_sec:nbpms-1]) length(bpm_idx)];
-sel_corr_f = [sort([nfc_sec:nfc_sec:nfcs-1 1:nfc_sec:nfcs-1]) length(corr_idx_f)];
+sel_bpm_f = [sort([nbpm_sec:nbpm_sec:nbpms-1 1:nbpm_sec:nbpms-1 4:nbpm_sec:nbpms-1 5:nbpm_sec:nbpms-1]) length(bpm_idx)];
+sel_corr_f = [1:nfcs-1 length(corr_idx_f)];
 sel_posang = sort([1:nbpm_sec/2:nbpms/2 3:nbpm_sec/2:nbpms/2]);
 sel_posang = [sel_posang nbpms_total/2+sel_posang];
 
