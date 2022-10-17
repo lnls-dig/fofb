@@ -1,11 +1,19 @@
-function [T,M,Mc] = fofb_sofb_tf(param)
+function [T,M,Mc] = fofb_sofb_tf(param, Wd, Wz)
+
+% TODO: must check that the number of BPMs is the same in all response matrices
+nbpms = size(param(1).M,1);
+
+if nargin < 2 || isempty(Wd)
+    Wd = eye(nbpms);
+end
+
+if nargin < 3 || isempty(Wz)
+    Wz = eye(nbpms);
+end
 
 for i=1:length(param)
     M{i} = param(i).M;
     Mc{i} = param(i).Mc;
-    
-    % TODO: must check that the number of BPMs is the same in all response matrices
-    nbpms = size(M{i},1);
     
     % Transfer functions
     G{i} = M{i}*tf(1,1,'iodelay', param(i).dly);
@@ -29,11 +37,21 @@ for i=1:length(param)
     sum_yd{i} = sumblk(sprintf('yd%s = y%s + dd%s', param_char, param_char, param_char), nbpms);
 end
 
+% Orbit disturbance transfer function
+Wd = ss(Wd);
+Wd.InputName = 'd';
+Wd.OutputName = 'dd';
+
+% Performance transfer function
+Wz = ss(Wz);
+Wz.InputName = 'ydd';
+Wz.OutputName = 'z';
+
 sum_e = sumblk('e = r - ydd', nbpms);
 sum_ydsf = sumblk('yd = yds + ydf', nbpms);
-sum_ydd = sumblk('ydd = yd + d', nbpms);
+sum_ydd = sumblk('ydd = yd + dd', nbpms);
 
-T = connect(G{:}, C{:}, D{:}, H{:}, sum_yd{:}, sum_e, sum_ydsf, sum_ydd, {'r','d','ds','df'}, 'ydd', {'us','uf'});
+T = connect(G{:}, C{:}, D{:}, H{:}, Wd, Wz, sum_yd{:}, sum_e, sum_ydsf, sum_ydd, {'r','d','ds','df'}, {'ydd','z'}, {'us','uf'});
 %T = minreal(T);
 
 end

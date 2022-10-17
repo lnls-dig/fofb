@@ -37,6 +37,8 @@ elseif strcmpi(plane, 'v')
     sel_bpm_f = [sort([nbpm_sec:nbpm_sec:nbpms-1 1:nbpm_sec:nbpms-1]) length(bpm_idx)];
     sel_corr_f = [sort([nfc_sec:nfc_sec:nfcs-1 1:nfc_sec:nfcs-1]) length(corr_idx_f)];
 end
+sel_posang = sort([1:nbpm_sec/2:nbpms/2 3:nbpm_sec/2:nbpms/2]);
+sel_posang = [sel_posang nbpms_total/2+sel_posang];
 
 if include_rf
     corr_idx_s = [corr_idx_s nchs_total+ncvs_total+1];
@@ -47,6 +49,14 @@ end
 
 [Ms,Mcs] = fofb_sofb_matrices('sofb_respmat.txt', bpm_idx, corr_idx_s, [], []);
 [Mf,Mcf] = fofb_sofb_matrices('fofb_respmat.txt', bpm_idx, corr_idx_f, sel_bpm_f, sel_corr_f);
+[posx, posy, angx, angy] = bpmpos2posang_matrix;
+
+if strcmpi(plane, 'h')
+    Wz = [posx.bpmx(:, bpm_idx); angx.bpmx(:, bpm_idx)];
+elseif strcmpi(plane, 'v')
+    Wz = [posy.bpmy(:, bpm_idx); angy.bpmy(:, bpm_idx)];
+end
+Wz = Wz(sel_posang,:);
 
 %%
 % dly [s]
@@ -90,15 +100,18 @@ param_names = {'fofb_sofb', 'acfofb_sofb', 'sofb', 'fofb'};
 
 %% Compute transfer functions
 for i=1:length(param)
-    T{i} = fofb_sofb_tf(param{i});
+    T{i} = fofb_sofb_tf(param{i}, [], Wz);
     T{i}.name = param_names{i};
     d_us{i} = getIOTransfer(T{i},'d','us');
     d_uf{i} = getIOTransfer(T{i},'d','uf');
     d_ydd{i} = getIOTransfer(T{i},'d','ydd');
+    d_z{i} = getIOTransfer(T{i},'d','z');
     
     d_us{i}.name = [param_names{i} ' d->us'];
     d_uf{i}.name = [param_names{i} ' d->uf'];
     d_ydd{i}.name = [param_names{i} ' d->ydd'];
+
+    d_z{i}.name = [param_names{i} ' d->z'];
 end
 
 
