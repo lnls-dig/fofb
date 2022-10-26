@@ -96,9 +96,11 @@ fofb_param(2).sel_corr = [];
 param = {fofb_sofb_param acfofb_sofb_param sofb_param fofb_param};
 param_names = {'fofb_sofb', 'acfofb_sofb', 'sofb', 'fofb'};
 
+kx = [1 0 0 0];
+
 %% Compute transfer functions
 for i=1:length(param)
-    T{i} = fofb_sofb_tf(param{i}, [], Wz);
+    T{i} = fofb_sofb_tf(param{i}, [], Wz, kx(i));
     T{i}.name = param_names{i};
     d_us{i} = getIOTransfer(T{i},'d','us');
     d_uf{i} = getIOTransfer(T{i},'d','uf');
