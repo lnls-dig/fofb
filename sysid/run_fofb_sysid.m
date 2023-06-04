@@ -5,7 +5,7 @@ plot_options.sysid_plot_pause = 0;
 
 nseg_discard_pre = 50;
 fir_remove_switching = dfilt.dffir(ones(1,4)/4);
-iir_lowpass = design(fdesign.lowpass(11e3, 12e3, 1, 80, Fs), 'butter', 'MatchExactly', 'stopband');
+iir_lowpass = design(fdesign.lowpass(0.23, 0.25, 1, 80, 1), 'butter', 'MatchExactly', 'stopband');
 
 %% Load data
 tic
@@ -27,6 +27,7 @@ y = sigcond(y, seglen, iir_lowpass, fir_remove_switching, ndiscard);
 fprintf('DONE. Elapsed time: %f s.\n', toc);
 
 %% System Identification
+sysid_data = {};
 sysid_result = {};
 sys = {};
 fitpct = zeros(nchan,1);
@@ -38,8 +39,8 @@ arx_orders(134, :) =  [6 6 1];
 for i=1:nchan
     tic
     fprintf('Estimating %s -> BPM model (idx = %4d)... ', uchname{i}, i);
-    sysid_data = iddata(detrend(y(:,i),0), detrend(u(:,i),0), Ts, 'OutputName', ychname{i}, 'InputName', uchname{i});
-    sysid_result{i} = arx(sysid_data, [arx_orders(i, 1:2) delayest(sysid_data)], arxOptions('Focus', 'Simulation', 'EnforceStability', true));
+    sysid_data{i} = iddata(detrend(y(:,i),0), detrend(u(:,i),0), Ts, 'OutputName', ychname{i}, 'InputName', uchname{i});
+    sysid_result{i} = arx(sysid_data{i}, [arx_orders(i, 1:2) delayest(sysid_data{i})], arxOptions('Focus', 'Simulation', 'EnforceStability', true));
     fitpct(i) = sysid_result{i}.Report.Fit.FitPercent;
     fprintf('Fit = %6.2f%%, Elapsed time: %f s.\n', fitpct(i), toc);    
     sys{i} = ss(sysid_result{i});    
@@ -56,7 +57,7 @@ end
 if plot_options.sysid_plot_pause > 0
     for i=1:nchan        
         %figure
-        compare(sysid_data, sysid_result{i})
+        compare(sysid_data{i}, sysid_result{i})
         pause(plot_options.sysid_plot_pause)
     end
 end
