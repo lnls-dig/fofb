@@ -24,6 +24,9 @@ nseg_discard_post = 0;
 ndiscard = [nseg_discard_pre nseg_discard_post]*seglen;
 u = sigcond(u, seglen, iir_lowpass, fir_remove_switching, ndiscard);
 y = sigcond(y, seglen, iir_lowpass, fir_remove_switching, ndiscard);
+
+u = detrend(u, 0);
+y = detrend(y, 0);
 fprintf('DONE. Elapsed time: %f s.\n', toc);
 
 %% System Identification
@@ -39,7 +42,7 @@ arx_orders(134, :) =  [6 6 1];
 for i=1:nchan
     tic
     fprintf('Estimating %s -> BPM model (idx = %4d)... ', uchname{i}, i);
-    sysid_data{i} = iddata(detrend(y(:,i),0), detrend(u(:,i),0), Ts, 'OutputName', ychname{i}, 'InputName', uchname{i});
+    sysid_data{i} = iddata(y, u, Ts, 'OutputName', ychname{i}, 'InputName', uchname{i});
     sysid_result{i} = arx(sysid_data{i}, [arx_orders(i, 1:2) delayest(sysid_data{i})], arxOptions('Focus', 'Simulation', 'EnforceStability', true));
     fitpct(i) = sysid_result{i}.Report.Fit.FitPercent;
     fprintf('Fit = %6.2f%%, Elapsed time: %f s.\n', fitpct(i), toc);    
