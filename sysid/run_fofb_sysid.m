@@ -60,7 +60,7 @@ end
 if plot_options.sysid_plot_pause > 0
     for i=1:nchan        
         %figure
-        compare(sysid_data{i}, sysid_result{i})
+        compare(sysid_data{i}, sysid_result{i}, Inf)
         pause(plot_options.sysid_plot_pause)
     end
 end
