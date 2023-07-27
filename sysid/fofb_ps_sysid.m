@@ -43,12 +43,21 @@ hor_corr_idxs = 1:80;
 vert_corr_idxs = 81:160;
 excluded_corrs = [1, 80, 81, 160];
 
-%% Model parameters definitions for the open loop estimation
+%% Builds estimation data objects for open loop estimation
+
+idx_crop = 1:70e3;
+ol_estimation_data = cell(ncorr, 1);
+
+for i = 1:ncorr
+    ol_estimation_data{i} = iddata(open_loop_out(idx_crop,i),...
+                                   open_loop_in(idx_crop,i), Ts);
+end
+
+%% Model parameter definitions for the open loop estimation
 
 np_ol = 1;
 nz_ol = 0;
 dly_ol = 2*Ts;
-idx_crop = 1:70e3;
 
 %% Open loop system identification of the power supplies
 
@@ -57,8 +66,8 @@ open_loop_bws = zeros(ncorr,1);
 
 for i=1:ncorr
     tic;
-    ol_estimated_power_supplies{i} = tfest(iddata(open_loop_out(idx_crop,i),...
-                                  open_loop_in(idx_crop,i), Ts), np_ol, nz_ol, dly_ol);
+    ol_estimated_power_supplies{i} = tfest(ol_estimation_data{i},... 
+                                           np_ol, nz_ol, dly_ol);
     fprintf('Corrector #%d...', i);
     elapsed_time = toc;
     fprintf(' %0.3f s.\n', elapsed_time);
@@ -202,7 +211,6 @@ histogram(R_aux(vert_corr_idxs), num_histogram_bins);
 title('Resistences [Ohm]')
 
 sgtitle('Vertical')
-
 %% Design of the closed loop PI gains
 
 clbw = 4e+3; %(Hz)
@@ -276,21 +284,30 @@ signal_duration = 3000;
 current_step_input = zeros(signal_duration, 1);
 current_step_input(step_start: end) = step_amplitude;
 
-%% Model parameters definitions for the open loop estimation
+%% Builds estimation data objects for closed loop estimation
+
+cl_estimation_data = cell(ncorr, 1);
+
+for i = 1:ncorr
+    cl_estimation_data{i} = iddata(closed_loop_out_avg(:,i),...
+                                   current_step_input, Ts);
+end
+
+%% Model parameter definitions for the closed loop estimation
 
 np_cl = 2;
 nz_cl = 1;
-dly_cl = 2*Ts;
+dly_cl = Ts;
 
 %% Closed loop system identification of the power supplies
 
-meas_closed_loop_bws = zeros(ncorr,1);
 cl_estimated_power_supplies = cell(ncorr, 1);
+meas_closed_loop_bws = zeros(ncorr,1);
 
 for i=1:ncorr
     tic;
-    cl_estimated_power_supplies{i} = tfest(iddata(closed_loop_out_avg(:,i), ... 
-                                     current_step_input, Ts), np_cl, nz_cl, dly_cl);
+    cl_estimated_power_supplies{i} = tfest(cl_estimation_data{i},...
+                                           np_cl, nz_cl, dly_cl);
     fprintf('Corrector #%d...', i);
     elapsed_time = toc;
     fprintf(' %0.3f s.\n', elapsed_time);
