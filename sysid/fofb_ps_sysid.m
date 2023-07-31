@@ -133,9 +133,9 @@ title('open loop FCVs Bandwidths [Hz]')
 R = zeros(ncorr,1);
 L = zeros(ncorr,1);
 
-for i=1:ncorr
-    L(i) = 1/ol_estimated_power_supplies{i}.Numerator;
-    R(i) = -L(i)*pole(ol_estimated_power_supplies{i});
+for i = 1:ncorr
+   R(i) = 1/dcgain(ol_estimated_power_supplies{i});
+   L(i) = -R(i)/pole(ol_estimated_power_supplies{i});
 end
 
 %% Plots of the estimated resistances and inductances
