@@ -3,6 +3,8 @@ function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
 % 
 % Construct orbit feedback state-space model.
 %
+% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz)
+%
 % INPUTS:
 %   M:    Orbit response matrix. Dimensions NBPM x NCORR, where NBPM is
 %         the number of BPMs and NCORR is the number of orbit correctors.
@@ -13,12 +15,14 @@ function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
 %         encompassing power supply, magnet, vacuum chamber, BPM and
 %         network delay dynamics. If only one system is provided all are
 %         assumed to have identical responses.
-%   F:    Shaping filters per orbit corrector (dynamic system object (tf,
-%         zpk, ss, etc.) or cell array of dynamic system objects with NCORR
-%         elements). If only one filter is provided the shaping filters
-%         of all actuators are assumed to be identical.
-%   Wd:   Disturbance weighting matrix, used for loop optimzation purposes.
-%   Wz:   Performance weighting matrix, used for loop optimzation purposes.
+%   F:    (Optional input) Shaping filters per orbit corrector (dynamic
+%         system object (tf, zpk, ss, etc.) or cell array of dynamic system
+%         objects with NCORR elements). If only one filter is provided the
+%         shaping filters of all actuators are assumed to be identical.
+%   Wd:   (Optional input) Disturbance weighting matrix, used for loop
+%         optimzation purposes.
+%   Wz:   (Optional input) Performance weighting matrix, used for loop
+%         optimzation purposes.
 %
 % OUTPUTS:
 %   P:    Generalized plant of the closed-loop orbit feedback system.
