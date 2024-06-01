@@ -1,4 +1,30 @@
-function [T, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
+function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
+% OFBMDL Orbit Feedback Model.
+% 
+% Construct orbit feedback state-space model.
+%
+% INPUTS:
+%   M:    Orbit response matrix. Dimensions NBPM x NCORR, where NBPM is
+%         the number of BPMs and NCORR is the number of orbit correctors.
+%   Mc:   Orbit correction matrix. Dimensions NCORR x NBPM.
+%   K:    Controller gain (scalar or array with NCORR elements).
+%   A:    Actuator responses (dynamic system object (tf, zpk, ss, etc.) or
+%         cell array of dynamic system objects with NCORR elements)
+%         encompassing power supply, magnet, vacuum chamber, BPM and
+%         network delay dynamics. If only one system is provided all are
+%         assumed to have identical responses.
+%   F:    Shaping filters per orbit corrector (dynamic system object (tf,
+%         zpk, ss, etc.) or cell array of dynamic system objects with NCORR
+%         elements). If only one filter is provided the shaping filters
+%         of all actuators are assumed to be identical.
+%   Wd:   Disturbance weighting matrix, used for loop optimzation purposes.
+%   Wz:   Performance weighting matrix, used for loop optimzation purposes.
+%
+% OUTPUTS:
+%   P:    Generalized plant of the closed-loop orbit feedback system.
+%   G:    Combined responses of actuators and beam (only static beam
+%         response).
+%   C:    Combined responses of the controller and shaping filters.
 
 nbpms = size(M,1);
 ncorr = size(M,2);
@@ -15,15 +41,15 @@ if nargin < 7 || isempty(Wz)
     Wz = eye(nbpms);
 end
 
-% Actuator trasnfer function (includes power supply, magent, vacuum
+% Actuator transfer function (includes power supply, magnet, vacuum
 % chamber, BPM, beam and network delay dynamics)
 [A, Ts] = sys_array2matrix(A, ncorr);
 
-% Loop shaping filters
+% Shaping filters
 [F, Ts_F] = sys_array2matrix(F, ncorr);
 
 if Ts_F ~= -1 && Ts ~= Ts_F
-    error('Sample time ''Ts'' of actuator transfer functions and loop shaping filters must be equal.');
+    error('Sample time ''Ts'' of actuator transfer functions and shaping filters must be equal.');
 end
 
 % Plant transfer function
@@ -52,7 +78,7 @@ Wz.OutputName = 'z';
 sum_yd = sumblk('yd = y + dd', nbpms);
 sum_e = sumblk('e = r - yd', nbpms);
 
-T = connect(G, C, Wd, Wz, sum_yd, sum_e, {'r','d'}, {'yd','z'}, {'u'});
+P = connect(G, C, Wd, Wz, sum_yd, sum_e, {'r','d'}, {'yd','z'}, {'u'});
 
 function [sys_matrix, Ts] = sys_array2matrix(sys_array, nsys)
 
