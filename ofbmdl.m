@@ -1,9 +1,9 @@
-function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
+function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz, Wn)
 % OFBMDL Orbit Feedback Model.
 % 
 % Construct orbit feedback state-space model.
 %
-% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz)
+% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz, Wn)
 %
 % INPUTS:
 %   M:    Orbit response matrix. Dimensions NBPM x NCORR, where NBPM is
@@ -22,6 +22,8 @@ function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz)
 %   Wd:   (Optional input) Disturbance weighting matrix, used for loop
 %         optimzation purposes.
 %   Wz:   (Optional input) Performance weighting matrix, used for loop
+%         optimzation purposes.
+%   Wn:   (Optional input) Noise weighting matrix, used for loop
 %         optimzation purposes.
 %
 % OUTPUTS:
@@ -43,6 +45,10 @@ end
 
 if nargin < 7 || isempty(Wz)
     Wz = eye(nbpms);
+end
+
+if nargin < 8 || isempty(Wn)
+    Wn = eye(nbpms);
 end
 
 % Actuator transfer function (includes power supply, magnet, vacuum
@@ -68,6 +74,9 @@ Wd = ss(Wd);
 % Performance weighting matrix
 Wz = ss(Wz);
 
+% Noise weighting matrix
+Wn = ss(Wn);
+
 % Port names
 G.InputName = 'u';
 G.OutputName = 'y';
@@ -77,12 +86,15 @@ Wd.InputName = 'd';
 Wd.OutputName = 'dd';
 Wz.InputName = 'yd';
 Wz.OutputName = 'z';
+Wn.InputName = 'n';
+Wn.OutputName = 'yn';
 
 % Sum points
 sum_yd = sumblk('yd = y + dd', nbpms);
-sum_e = sumblk('e = r - yd', nbpms);
+sum_e = sumblk('e = r - ydn', nbpms);
+sum_ydn = sumblk('ydn = yd + yn', nbpms);
 
-P = connect(G, C, Wd, Wz, sum_yd, sum_e, {'r','d'}, {'yd','z'}, {'u'});
+P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n'}, {'y','yd','z'}, {'u'});
 
 function [sys_matrix, Ts] = sys_array2matrix(sys_array, nsys)
 
