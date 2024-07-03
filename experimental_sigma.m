@@ -4,10 +4,10 @@ clc;clear;
 %Simulation parameters
 step_duration = 2;
 n_prbs=8;
-prbs_periods = 10; %Standard is 24
+prbs_periods = 5; %Standard is 24
 prbs_amplitude = 4000; %Standard is 4000;
 standard_deviation = 300;
-type='Sensibility'; %Sensibility or Open Loop
+type='Open Loop'; %Sensibility or Open Loop
 processing_mode='Averaging'; %Averaging or PRBS_binning
 %FOFB parameters
 load respmat.mat
@@ -42,7 +42,7 @@ fprintf("Elapsed time: %f s\n", toc);
 %PRBS input
 fprintf("Creating PRBS input...\n");
 N=2^n_prbs-1;
-fprintf("Acquisition time: %f s\n", N*prbs_periods*Ts);
+fprintf("Acquisition time (mode): %f s\n", N*prbs_periods*Ts);
 input = frest.PRBS('Order',n_prbs,'NumPeriods',prbs_periods,'Amplitude',prbs_amplitude,'Ts',Ts,'UseWindow','off');
 inputts = generateTimeseries(input);
 prbs_input = repelem(inputts.Data,step_duration);
@@ -100,7 +100,8 @@ Yu = ones(length(F_index),n,n_excited_modes);
 Yy = ones(length(F_index),m,n_excited_modes);
 Yu_aux = zeros(n,n_excited_modes);
 Yy_aux = zeros(m,n_excited_modes);
-snr_db = zeros(max(n,m),n_excited_modes);
+snr_db = ones(m,n_excited_modes);
+%Iterates for each mode tested
 for k=1:n_excited_modes
     fprintf("Mode:%d\n",k);
     if strcmp(type,'Sensibility')
@@ -108,8 +109,12 @@ for k=1:n_excited_modes
         y(:,:,k) = lsim(SYS,[u(:,:,k) noise],prbs_time);
     elseif strcmp(type,'Open Loop')
         y(:,:,k) = lsim(SYS,u(:,:,k),prbs_time);
+        noise = standard_deviation.*randn(length(y(:,1,1)),1);
+        y(:,i,k) = y(:,i,k) + noise;
     end
+    %Iterates in each input/output
     for i=1:m
+        %Building Yu arrays
         if(i<=n)
             if strcmp(processing_mode,'PRBS_binning')
                 [Yu_aux,~] = adj_fft(u(:,i,k),Ts);
@@ -120,9 +125,8 @@ for k=1:n_excited_modes
             end
             Yu(:,i,k) = Yu_aux(F_index);
         end
+        %Building Yy arrays
         if strcmp(processing_mode,'PRBS_binning')
-            noise = standard_deviation.*randn(length(y(:,1,1)),1);
-            y(:,i,k) = y(:,i,k) + noise;
             [Yy_aux,F] = adj_fft(y(:,i,k),Ts);   
             Yy(:,i,k) = Yy_aux(F_index);
         elseif strcmp(processing_mode,'Averaging')
@@ -131,7 +135,13 @@ for k=1:n_excited_modes
             [Yy_aux,F] = adj_fft(y_avg,Ts);   
             Yy(:,i,k) = Yy_aux(F_index);
         end
-        snr_db(i,k) = 20*log10(rms(y(:,i,k))/rms(noise(:,i)));
+        %Calculating SNR vector
+        if strcmp(type,'Open Loop')
+            snr_db(i,k) = 20*log10(rms(y(:,i,k))/rms(noise));
+        elseif strcmp(type,'Sensibility')
+            snr_db(i,k) = 20*log10(rms(y_avg)/rms(noise(:,i)));
+        end
+        %Print value for first output
         if i==1
             fprintf("Output 1 signal standard deviation: %f\n", std(detrend(y(:,1,k),0)));
             if strcmp(processing_mode,'Averaging')
