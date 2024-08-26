@@ -48,7 +48,7 @@ for i=1:15
     elseif i==15
         y = double(y_data(19,13000+173460:13000+173629));
     end
-%y = filter(fir_moving_average, y); %optional filter
+y = filter(fir_moving_average, y); %optional filter
 y = detrend(y,0);
 %y=y-mean(y);
 t = linspace(0,length(y)*Ts,length(y));

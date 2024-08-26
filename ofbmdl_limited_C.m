@@ -1,4 +1,4 @@
-function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz, Wn, eta)
+function [P, G, C] = ofbmdl_limited_C(M, Mc, K, A, F, Wd, Wz, Wn, eta)
 % OFBMDL Orbit Feedback Model.
 % 
 % Construct orbit feedback state-space model.
@@ -119,10 +119,15 @@ Wz = ss(Wz);
 Wn = ss(Wn);
 
 % Port names
+Wrf = ss(eye(1));
+Wrf.InputName = 'rf';
+Wrf.OutputName = 'yrf';
+C.InputName = 'e';
+C.OutputName = 'u_c';
+I = append(C(1:156,:),Wrf);
+I.OutputName = 'u';
 G.InputName = 'u';
 G.OutputName = 'y';
-C.InputName = 'e';
-C.OutputName = 'u';
 Wd.InputName = 'd';
 Wd.OutputName = 'dd';
 Wz.InputName = 'yd';
@@ -136,7 +141,7 @@ sum_e = sumblk('e = r - ydn', nbpms);
 sum_ydn = sumblk('ydn = yd + yn', nbpms);
 
 if rf_interaction
-    P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n','u(157)'}, {'y','yd','z'}, {'u'});
+    P = connect(G, I, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n','rf'}, {'y','yd','z'});
 else
     P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n'}, {'y','yd','z'}, {'u'});
 end
