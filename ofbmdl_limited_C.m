@@ -1,9 +1,9 @@
-function [P, G, C] = ofbmdl_limited_C(M, Mc, K, A, F, Wd, Wz, Wn, eta)
+function [P, G, C] = ofbmdl_limited_C(M, Mc, K, A, F, Wd, Wz, Wn, eta, rf)
 % OFBMDL Orbit Feedback Model.
 % 
 % Construct orbit feedback state-space model.
 %
-% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz, Wn, eta)
+% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz, Wn, eta, rf)
 %
 % INPUTS:
 %   M:    Orbit response matrix. Dimensions NBPM x NCORR, where NBPM is
@@ -27,6 +27,8 @@ function [P, G, C] = ofbmdl_limited_C(M, Mc, K, A, F, Wd, Wz, Wn, eta)
 %         optimzation purposes.
 %   eta:  (Optional input) RF column in the orbit response matrix. 
 %         Dimensions NBPMx1.
+%   rf:   (Optional input) Use RF line in the orbit response matrix
+%         pseudoinverse. Boolean variable
 %
 % OUTPUTS:
 %   P:    Generalized plant of the closed-loop orbit feedback system.
@@ -37,6 +39,7 @@ function [P, G, C] = ofbmdl_limited_C(M, Mc, K, A, F, Wd, Wz, Wn, eta)
 nbpms = size(M,1);
 ncorr = size(M,2);
 rf_interaction=true;
+rf_line=true;
 
 if nargin < 5 || isempty(F)
     F = tf(1, 1, -1);
@@ -56,6 +59,10 @@ end
 
 if nargin < 9 || isempty(eta)
     rf_interaction=false;
+end
+
+if nargin < 10 || isempty(rf)
+    rf_line=false;
 end
 
 % Actuator transfer function (includes power supply, magnet, vacuum
@@ -83,25 +90,26 @@ if rf_interaction
     %Current to beam tranfer function, considering Gd=3 - Not currently used
     %H2=tf([sync_freq^2 0], [1 2*alpha_s sync_freq^2],'InputDelay',2*Ts);
     %H2=H2*(-pi*3*1e9/180/rf_freq/alpha_c);
-    H = c2d(H, Ts)*1e9; %discretizing and adjusting for nm
+    H = c2d(H, Ts)*1e6; %discretizing and adjusting for um
     H = absorbDelay(H);
     H = H.*eta; %scale by eta
     %New M and altered Mc
     Mrf = [M H];
-    Mc = pinv([M zeros(length(eta),1)]);
-    %Mc = pinv([M eta]);
+    if rf_line
+        Mc = pinv([M eta]);
+    else
+        Mc = pinv([M zeros(length(eta),1)]);
+    end
+    Mc(157,:) = []; %Removes last line as currently done
     %Altered actuator responses
     A(ncorr+1,ncorr+1) = tf(1,1,Ts);
-    %A(ncorr+1,:)=tf(1,1,Ts);
-    % Altered shaping filters
-    F(ncorr+1,ncorr+1)=tf(1, 1, Ts);
     % Plant transfer function
     G = ss(Mrf)*ss(A);
-    K_I = eye(ncorr)*K*tf([Ts 0], [1 -1], Ts); %No RF control from FOFB
-    K_I(ncorr+1,ncorr+1) = tf(1,1,Ts); %No RF control from FOFB
-    %K_I = eye(ncorr+1)*K*tf([Ts 0], [1 -1], Ts); %RF control from FOFB
+    %K_I = eye(ncorr)*K*tf([Ts 0], [1 -1], Ts); %No RF control from FOFB
     % Controller transfer function
-    C = ss(F)*K_I*Mc;
+    %C = ss(F)*K_I*Mc;
+    % Controller transfer function
+    C = ss(F)*diag(K)*Mc*tf([Ts 0], [1 -1], Ts);
 else
     % Plant transfer function
     G = ss(M)*ss(A);
@@ -119,12 +127,12 @@ Wz = ss(Wz);
 Wn = ss(Wn);
 
 % Port names
-Wrf = ss(eye(1));
+Wrf = ss(1);
 Wrf.InputName = 'rf';
 Wrf.OutputName = 'yrf';
 C.InputName = 'e';
 C.OutputName = 'u_c';
-I = append(C(1:156,:),Wrf);
+I = append(C,Wrf);
 I.OutputName = 'u';
 G.InputName = 'u';
 G.OutputName = 'y';
@@ -141,9 +149,9 @@ sum_e = sumblk('e = r - ydn', nbpms);
 sum_ydn = sumblk('ydn = yd + yn', nbpms);
 
 if rf_interaction
-    P = connect(G, I, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n','rf'}, {'y','yd','z'});
+    P = connect(G, I, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n','rf'}, {'y','yd','z'},{'u'});
 else
-    P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n'}, {'y','yd','z'}, {'u'});
+    P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n'}, {'y','yd','z'},{'u'});
 end
 
 function [sys_matrix, Ts] = sys_array2matrix(sys_array, nsys)

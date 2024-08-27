@@ -13,7 +13,7 @@ fir_moving_average = dfilt.dffir(ones(1,4)/4);
 y = double(y_data(chosen_bpm,479075:479345));
 y = detrend(y,0);
 y = filter(fir_moving_average, y);
-y=y*0.65e3;
+%y=y*0.65e3;
 t = linspace(0,length(y)*Ts,length(y));
 hold on;
 plot(t,y,'red')
@@ -47,14 +47,20 @@ M = M(bpm_idx, corr_idx);
 Mc = pinv(M);
 sys = sys(corr_idx);
 load rf_column.mat
-[P, G, C] = ofbmdl(M, Mc, K, sys, [],[],[],[],eta(bpm_idx));
+[P, G, C] = ofbmdl_limited_C(M, Mc, K, sys, [],[],[],[],eta(bpm_idx),true);
 fprintf("Elapsed time: %f s\n", toc);
 
 %RF step with a closed FOFB
 fprintf("RF step - Closed FOFB...\n");
+hold on;
+for i=19:10:80
+    fprintf("Output %d\n",i);
+    SYS = P('yd','rf');
+    step(SYS(i,1))
+end
 %figure;
-SYS = P('yd','u(157)');
-step(SYS(chosen_bpm,1))
+%SYS = P('yd','u(157)');
+%step(SYS(chosen_bpm,1))
 %hold on;
 %for i=1:160
 %    fprintf("Output %d\n",i);

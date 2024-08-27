@@ -9,11 +9,10 @@ y_data = h5read('rf-phase-fofb-on.h5','/data/orbx');
 sampling_frequency = h5read('rf-phase-fofb-on.h5','/data/sampling_frequency');
 Ts=1/sampling_frequency;
 fir_moving_average = dfilt.dffir(ones(1,4)/4);
-%197425
 y = double(y_data(chosen_bpm,197425:197540));
 y = detrend(y,0);
 y = filter(fir_moving_average, y);
-y=y*0.65e3;
+%y=y*0.65e3;
 t = linspace(0,length(y)*Ts,length(y));
 hold on;
 plot(t,y,'red')
@@ -47,17 +46,17 @@ M = M(bpm_idx, corr_idx);
 Mc = pinv(M);
 sys = sys(corr_idx);
 load rf_column.mat
-[P, G, C] = ofbmdl(M, Mc, K, sys, [],[],[],[],eta(bpm_idx));
+[P, G, C] = ofbmdl_limited_C(M, Mc, K, sys, [],[],[],[],eta(bpm_idx),[]);
 fprintf("Elapsed time: %f s\n", toc);
 
 %RF step with a closed FOFB
 fprintf("RF step - Closed FOFB...\n");
 %figure;
-SYS = P('yd','u(157)');
-step(SYS(chosen_bpm,1))
-%hold on;
-%for i=1:160
-%    fprintf("Output %d\n",i);
-%    SYS = P('yd','u(157)');
-%    step(SYS(i,1))
-%end
+%SYS = P('yd','rf');
+%step(SYS(chosen_bpm,1))
+hold on;
+for i=19:10:80
+    fprintf("Output %d\n",i);
+    SYS = P('yd','rf');
+    step(SYS(i,1))
+end
