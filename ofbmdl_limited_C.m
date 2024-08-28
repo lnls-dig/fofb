@@ -90,9 +90,9 @@ if rf_interaction
     %Current to beam tranfer function, considering Gd=3 - Not currently used
     %H2=tf([sync_freq^2 0], [1 2*alpha_s sync_freq^2],'InputDelay',2*Ts);
     %H2=H2*(-pi*3*1e9/180/rf_freq/alpha_c);
-    H = c2d(H, Ts)*1e6; %discretizing and adjusting for um
+    H = c2d(H, Ts); %discretizing 
     H = absorbDelay(H);
-    H = H.*eta; %scale by eta
+    H = H.*eta*1e6;%/(2*pi); %scale by eta and adjusting for nm
     %New M and altered Mc
     Mrf = [M H];
     if rf_line
