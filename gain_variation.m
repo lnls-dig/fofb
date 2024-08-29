@@ -1,14 +1,18 @@
 % Copyright (C) 2024 CNPEM (cnpem.br)
 % Author: Lucas Pelike <lucas.pelike@lnls.br>
 
+clc;clear;
 %Gain  variation
+%Simulation parameters
+min_gain = 0.001;
+gain_step = 0.025;
+max_gain = 0.5;
 %FOFB parameters
 load respmat.mat
 M = mat_d';
 sys=cell(size(M,2), 1);
 load sysid_res-24-08-13.mat
 Ts=1/48193;
-K = 0.120*48193;
 fofb_type.bpm_sector = 'm1m2c2c3';
 fofb_type.corr_sector = 'm1m2c2c3';
 fofb_type.bpm_remove_idx = [];
@@ -30,20 +34,103 @@ tic
 M = M(bpm_idx, corr_idx);
 Mc = pinv(M);
 sys = sys(corr_idx);
-[P, G, C] = ofbmdl(M, Mc, K, sys);
 fprintf("Elapsed time: %f s\n", toc);
-%Considering correctos discrepancies
-stable = isstable(P);
-it=0;
-while stable
-    it=it+1;
-    fprintf("Iteration= %d\n", it);
-    fprintf("K= %f\n", K/48193);
-    K=K*1.1;
-    [P, G, C] = ofbmdl(M, Mc, K, sys);
-    stable = isstable(P);
+%Considering correctors discrepancies
+%stable = isstable(P);
+it_h=1;
+stable_complete = zeros(int32(max_gain/gain_step));
+for i=min_gain:gain_step:max_gain
+    it_v=1;
+    fprintf("It_h = %d \n", it_h);
+    for j=min_gain:gain_step:max_gain
+        fprintf("It_v = %d \n", it_v);
+        K = new_gain(i,j,size(M,2)/2);
+        fprintf("K_h = %f , K_v = %f\n", K(1)/48193, K(81)/48193);
+        [P, ~, ~] = ofbmdl(M, Mc, K, sys);
+        stable_complete(it_h,it_v) = isstable(P);
+        it_v=it_v+1;
+    end
+    it_h=it_h+1;
 end
 %Equal correctors
-%If only a SISO restriction is considered 
-%bpm_idx = 8;
-%corr_idx = 4;
+sys = sys(10); %Use corrector 10 as all correctors
+it_h=1;
+stable_simple = zeros(int32(max_gain/gain_step));
+for i=min_gain:gain_step:max_gain
+    it_v=1;
+    fprintf("It_h = %d \n", it_h);
+    for j=min_gain:gain_step:max_gain
+        fprintf("It_v = %d \n", it_v);
+        K = new_gain(i,j,size(M,2)/2);
+        fprintf("K_h = %f , K_v = %f\n", K(1)/48193, K(81)/48193);
+        [P, ~, ~] = ofbmdl(M, Mc, K, sys);
+        stable_simple(it_h,it_v) = isstable(P);
+        it_v=it_v+1;
+    end
+    it_h=it_h+1;
+end
+
+%Plots results
+figure;
+title('Stability plot for different horizontal and vertical gains')
+hold on;
+it_h=1;
+for i=min_gain:gain_step:max_gain
+    it_v=1;
+    for j=min_gain:gain_step:max_gain
+        if stable_complete(it_h,it_v)==1
+            plot(i,j,'Color','red','Marker','.')
+        else
+            plot(i,j,'Color','black','Marker','.')
+        end
+        if stable_simple(it_h,it_v)==1
+            plot(i,j,'Color','blue','Marker','d')
+        else
+            plot(i,j,'Color','black','Marker','d')
+        end
+        it_v=it_v+1;
+    end
+    it_h=it_h+1;
+end
+grid on;
+xlabel('Vertical plane gain')
+ylabel('Horizontal plane gain')
+
+figure;
+title('Stability plot for different horizontal and vertical gains')
+hold on;
+idx_complete_v = find(stable_complete(1,:) == 0,1,'first');
+idx_complete_h = find(stable_complete(:,1) == 0,1,'first');
+idx_simple_v = find(stable_simple(1,:) == 0,1,'first');
+idx_simple_h = find(stable_simple(:,1) == 0,1,'first');
+it_h=1;
+it_v=1;
+for i=min_gain:gain_step:max_gain
+    it_v=1;
+    for j=min_gain:gain_step:max_gain
+        if it_v==idx_complete_v
+            lim_complete_v=j;
+        end
+        if it_h==idx_complete_h
+            lim_complete_h=j;
+        end
+        if it_v==idx_simple_v
+            lim_simple_v=j;
+        end
+        if it_h==idx_simple_h
+            lim_simple_h=j;
+        end
+        it_v=it_v+1;
+    end
+    it_h=it_h+1;
+end
+area([0 lim_simple_v],[lim_simple_h lim_simple_h],'FaceColor','red','FaceAlpha',0.6);
+area([0 lim_complete_v],[lim_complete_h lim_complete_h],'FaceColor','blue','FaceAlpha',0.55);
+grid on;
+xlabel('Vertical plane gain')
+ylabel('Horizontal plane gain')
+legend({'Matched actuators','Discrepant actuators'})
+
+function [K] = new_gain(h_gain, v_gain, plane_size)
+    K = [ones(plane_size,1)*h_gain*48193; ones(plane_size,1)*v_gain*48193];
+end
