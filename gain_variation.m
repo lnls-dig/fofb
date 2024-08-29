@@ -71,6 +71,7 @@ for i=min_gain:gain_step:max_gain
 end
 
 %Plots results
+%Dots plots
 figure;
 title('Stability plot for different horizontal and vertical gains')
 hold on;
@@ -96,6 +97,7 @@ grid on;
 xlabel('Vertical plane gain')
 ylabel('Horizontal plane gain')
 
+%Area plots
 figure;
 title('Stability plot for different horizontal and vertical gains')
 hold on;
@@ -112,20 +114,20 @@ for i=min_gain:gain_step:max_gain
             lim_complete_v=j;
         end
         if it_h==idx_complete_h
-            lim_complete_h=j;
+            lim_complete_h=i;
         end
         if it_v==idx_simple_v
             lim_simple_v=j;
         end
         if it_h==idx_simple_h
-            lim_simple_h=j;
+            lim_simple_h=i;
         end
         it_v=it_v+1;
     end
     it_h=it_h+1;
 end
 area([0 lim_simple_v],[lim_simple_h lim_simple_h],'FaceColor','red','FaceAlpha',0.6);
-area([0 lim_complete_v],[lim_complete_h lim_complete_h],'FaceColor','blue','FaceAlpha',0.55);
+area([0 lim_complete_v],[lim_complete_h lim_complete_h],'FaceColor','blue');
 grid on;
 xlabel('Vertical plane gain')
 ylabel('Horizontal plane gain')
