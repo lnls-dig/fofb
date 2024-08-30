@@ -1,9 +1,9 @@
-function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz, Wn)
+function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz, Wn, eta)
 % OFBMDL Orbit Feedback Model.
 % 
 % Construct orbit feedback state-space model.
 %
-% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz, Wn)
+% [P, G, C] = OFBMDL(M, Mc, K, A, F, Wd, Wz, Wn, eta)
 %
 % INPUTS:
 %   M:    Orbit response matrix. Dimensions NBPM x NCORR, where NBPM is
@@ -25,6 +25,8 @@ function [P, G, C] = ofbmdl(M, Mc, K, A, F, Wd, Wz, Wn)
 %         optimzation purposes.
 %   Wn:   (Optional input) Noise weighting matrix, used for loop
 %         optimzation purposes.
+%   eta:  (Optional input) RF column in the orbit response matrix.
+%         Dimensions NBPMx1.
 %
 % OUTPUTS:
 %   P:    Generalized plant of the closed-loop orbit feedback system.
@@ -51,6 +53,10 @@ if nargin < 8 || isempty(Wn)
     Wn = eye(nbpms);
 end
 
+if nargin < 9 || isempty(eta)
+    eta = zeros(nbpms,1);
+end
+
 % Actuator transfer function (includes power supply, magnet, vacuum
 % chamber, BPM, beam and network delay dynamics)
 [A, Ts] = sys_array2matrix(A, ncorr);
@@ -62,8 +68,30 @@ if Ts_F ~= -1 && Ts ~= Ts_F
     error('Sample time ''Ts'' of actuator transfer functions and shaping filters must be equal.');
 end
 
+% TODO: don't hardcode these values
+% Fitted parameters obtained with llrf_phase_to_orb_fit.m
+big_omega = 1.3471e+04; % rad/s
+alpha_s = 1332.09;
+% Theoretical parameters
+% https://wiki-sirius.lnls.br/mediawiki/index.php/Machine:RF_System
+omega_rf = 2*pi*499.664e6; % rad/s
+alpha_c = 1.6e-4;
+
+% RF phase to orbit transfer function
+% https://journals.aps.org/prab/pdf/10.1103/PhysRevAccelBeams.25.082801
+H = tf([big_omega^2/omega_rf/alpha_c 0], ...
+       [1 2*alpha_s big_omega^2],'InputDelay',2*Ts);
+H = 1e9*H; % adjusting to nm
+H = c2d(H,Ts);
+H = absorbDelay(H);
+
+A(ncorr+1,ncorr+1) = H;
+F(ncorr+1,ncorr+1) = 0;
+K(ncorr+1) = 0;
+Mc(ncorr+1,:) = zeros(nbpms,1);
+
 % Plant transfer function
-G = ss(M)*ss(A);
+G = ss([M eta])*ss(A);
 
 % Controller transfer function
 C = ss(F)*diag(K)*Mc*tf([Ts 0], [1 -1], Ts);
@@ -77,8 +105,13 @@ Wz = ss(Wz);
 % Noise weighting matrix
 Wn = ss(Wn);
 
+% RF phase noise weighting matrix
+Wph = zeros(ncorr+1);
+Wph(ncorr+1,ncorr+1) = 1;
+Wph = ss(Wph);
+
 % Port names
-G.InputName = 'u';
+G.InputName = 'ud';
 G.OutputName = 'y';
 C.InputName = 'e';
 C.OutputName = 'u';
@@ -88,13 +121,17 @@ Wz.InputName = 'yd';
 Wz.OutputName = 'z';
 Wn.InputName = 'n';
 Wn.OutputName = 'yn';
+Wph.InputName = 'ph';
+Wph.OutputName = 'phn';
 
 % Sum points
 sum_yd = sumblk('yd = y + dd', nbpms);
 sum_e = sumblk('e = r - ydn', nbpms);
 sum_ydn = sumblk('ydn = yd + yn', nbpms);
+sum_ud = sumblk('ud = u + phn', ncorr+1);
 
-P = connect(G, C, Wd, Wz, Wn, sum_yd, sum_e, sum_ydn, {'r','d','n'}, {'y','yd','z'}, {'u'});
+P = connect(G, C, Wd, Wz, Wn, Wph, sum_yd, sum_e, sum_ydn, sum_ud,...
+            {'r','d','n','ph'}, {'y','yd','z'}, {'u'});
 
 function [sys_matrix, Ts] = sys_array2matrix(sys_array, nsys)
 
