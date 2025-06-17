@@ -28,10 +28,10 @@ for i=1:ncorr
         sys{i} = plant_arx_fit(fpath, [6 6 2]);
         fit(i) = sys{i}.Report.Fit.FitPercent;
 
-        opts = bodeoptions;
-        opts.FreqUnits = 'Hz';
-        bode(sys{i}, opts);
-        hold on;
+        %opts = bodeoptions;
+        %opts.FreqUnits = 'Hz';
+        %bode(sys{i}, opts);
+        %hold on;
     end
     fprintf('Elapsed time: %f s\n', toc);
 end
