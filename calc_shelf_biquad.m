@@ -11,19 +11,19 @@ function biquad = calc_shelf_biquad(z, p, Ts)
     k = p/z;
     % Analog filter
     sysc = tf(zpk(wz, wp, k));
-    figure();
-    opts = bodeoptions;
-    opts.FreqUnits = 'Hz';
-    opts.PhaseWrapping = 'on';
-    bode(sysc, opts);
-    hold on;
+    % figure();
+    % opts = bodeoptions;
+    % opts.FreqUnits = 'Hz';
+    % opts.PhaseWrapping = 'on';
+    % bode(sysc, opts);
+    % hold on;
 
     % Discretize using Tustin's method
     sysd = c2d(sysc, Ts, 'Tustin');
-    bode(sysd, opts);
-    legend({'continuous', 'discrete'});
-    figure()
-    zplane(sysd.Numerator{1}, sysd.Denominator{1});
+    % bode(sysd, opts);
+    % legend({'continuous', 'discrete'});
+    % figure()
+    % zplane(sysd.Numerator{1}, sysd.Denominator{1});
 
     % Convert to SOS
     [biquad.sos, biquad.g] = tf2sos(sysd.Numerator{1}, sysd.Denominator{1});

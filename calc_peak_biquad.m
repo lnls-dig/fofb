@@ -7,12 +7,12 @@
 function biquad = calc_peak_biquad(n0, Q)
     [b, a] = iirpeak(n0, n0/Q);
     sysr = minreal(tf(b, a, 1));
-    figure();
-    opts = bodeoptions;
-    opts.PhaseWrapping = 'on';
-    bode(sysr, opts);
-    figure();
-    zplane(sysr.Numerator{1}, sysr.Denominator{1});
+    % figure();
+    % opts = bodeoptions;
+    % opts.PhaseWrapping = 'on';
+    % bode(sysr, opts);
+    % figure();
+    % zplane(sysr.Numerator{1}, sysr.Denominator{1});
 
     % Convert to SOS
     [biquad.sos, biquad.g] = tf2sos(sysr.Numerator{1},sysr.Denominator{1});
