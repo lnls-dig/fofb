@@ -14,18 +14,17 @@
 % Copyright (C) 2024 CNPEM (cnpem.br)
 % Author: Guilherme Ricioli <guilherme.ricioli@lnls.br>
 
-function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
-                                   params_out_fn)
+function gen_high_level_params_mat(ps_pi_fpga_gains_fpath, params_out_fn)
   % Constants
   fs = 48193;
   ncorr = 160;
   nbiquads = 4;
   excluded_corr = [1, 80, 81, 160];
-  actuator_bw = 10000;
+  %% actuator_bw = 10000;
 
   addpath('sysid');
 
-  cl_ps_idtf = load(cl_ps_idtf_fpath).cl_ps_idtf;
+  %% cl_ps_idtf = load(cl_ps_idtf_fpath).cl_ps_idtf;
   ps_pi_fpga_gains = readmatrix(ps_pi_fpga_gains_fpath);
 
   pass_through_biquad.sos = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
@@ -34,35 +33,35 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
   filter.sos = repmat(pass_through_biquad.sos, nbiquads, 1);
   filter.g = pass_through_biquad.g;
 
-  % Common filters
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  % Biquad 1: Notch filter @ FOFB/4
-  biquad = calc_notch_biquad(0.5, 8);
-  filter.sos(1, :) = biquad.sos;
-  filter.g = filter.g*biquad.g;
+  %% % Common filters
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% % Biquad 1: Notch filter @ FOFB/4
+  %% biquad = calc_notch_biquad(0.5, 8);
+  %% filter.sos(1, :) = biquad.sos;
+  %% filter.g = filter.g*biquad.g;
 
-  % Biquad 2: Notch filter @ FOFB/2
-  biquad = calc_notch_biquad(0.9999999999, 8);
-  filter.sos(2, :) = biquad.sos;
-  filter.g = filter.g*biquad.g;
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% % Biquad 2: Notch filter @ FOFB/2
+  %% biquad = calc_notch_biquad(0.9999999999, 8);
+  %% filter.sos(2, :) = biquad.sos;
+  %% filter.g = filter.g*biquad.g;
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  % Specific filters
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% % Specific filters
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   filters = cell(ncorr, 1);
   for i = 1:ncorr
     filters{i} = filter;
 
-    % We don't have fitted models for the excluded correctors
-    if ~ismember(i, excluded_corr)
-      cl_ps_bw = bandwidth(cl_ps_idtf{i})/(2*pi);
-      % Biquad 3: Pre-emphasis shelf filter
-      biquad = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
-      filters{i}.sos(3, :) = biquad.sos;
-      filters{i}.g = filters{i}.g*biquad.g;
-    end
+  %%   % We don't have fitted models for the excluded correctors
+  %%   if ~ismember(i, excluded_corr)
+  %%     cl_ps_bw = bandwidth(cl_ps_idtf{i})/(2*pi);
+  %%     % Biquad 3: Pre-emphasis shelf filter
+  %%     biquad = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
+  %%     filters{i}.sos(3, :) = biquad.sos;
+  %%     filters{i}.g = filters{i}.g*biquad.g;
+  %%   end
   end
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % Plot composed filters' bode
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
