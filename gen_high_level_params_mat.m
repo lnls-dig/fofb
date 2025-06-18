@@ -80,6 +80,7 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
       assert((dcgain(sys) - 1.0) < 0.001);
 
       bode(sys, opts);
+      grid on;
       hold on;
     end
   end
