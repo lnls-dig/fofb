@@ -9,13 +9,15 @@
 %                     obtained by sysid/ps_cl_tfest
 %   ps_pi_fpga_gains_fpath: filepath to the power supplies' PI gains obtained by
 %                           sysid/ps_pi_tune
+%   F_fpath: filepath to the cell array of dimensions NCORR x 1 of objects 'tf'
+%            representing the filters to be incorporated
 %   params_out_fn: output parameters filename
 
 % Copyright (C) 2024 CNPEM (cnpem.br)
 % Author: Guilherme Ricioli <guilherme.ricioli@lnls.br>
 
 function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
-                                   params_out_fn)
+                                   F_fpath, params_out_fn)
   % Constants
   fs = 48193;
   ncorr = 160;
@@ -27,6 +29,7 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
 
   cl_ps_idtf = load(cl_ps_idtf_fpath).cl_ps_idtf;
   ps_pi_fpga_gains = readmatrix(ps_pi_fpga_gains_fpath);
+  F = load(F_fpath).F;
 
   pass_through_biquad.sos = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
   pass_through_biquad.g = 1.0;
@@ -78,6 +81,26 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
 
       filters{i}.sos(2, :) = biquad.sos;
       filters{i}.g = filter.g*biquad.g;
+
+      % Biquads 3 and 4: Equalization filter
+      assert(order(F{i}) <= 4);
+      assert(isstable(F{i}));
+
+      % Convert to SOS
+      [biquad.sos, biquad.g] = tf2sos(F{i}.Numerator{1},F{i}.Denominator{1});
+
+      % Scale the numerator coefficients to better use FPGA's resolution
+      % NOTE: The denominator can't be changed because gateware assumes a0 = 1.
+      max_fpga_coeff = 2;
+      for j = 1:size(biquad.sos,1)
+        factor = max_fpga_coeff/max(abs(biquad.sos(j,1:3)));
+        biquad.sos(j,1:3) = factor*biquad.sos(j,1:3);
+        biquad.g = biquad.g/factor;
+
+        filters{i}.sos(2+j,:) = biquad.sos(j,:);
+      end
+
+      filters{i}.g = filters{i}.g*biquad.g;
     else
       % Biquad 2: Notch filter @ FOFB/2
       filters{i}.sos(2, :) = notch_FOFB_2.sos;
