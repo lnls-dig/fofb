@@ -34,32 +34,54 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
   filter.sos = repmat(pass_through_biquad.sos, nbiquads, 1);
   filter.g = pass_through_biquad.g;
 
-  % Common filters
+  % Common biquads
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Biquad 1: Notch filter @ FOFB/4
-  notch_FOFB_2 = calc_notch_biquad(0.5, 8);
-  filter.sos(1, :) = notch_FOFB_2.sos;
-  filter.g = filter.g*notch_FOFB_2.g;
-
-  % Biquad 2: Notch filter @ FOFB/2
-  notch_FOFB_4 = calc_notch_biquad(0.9999999999, 8);
-  filter.sos(2, :) = notch_FOFB_4.sos;
+  notch_FOFB_4 = calc_notch_biquad(0.5, 8);
+  filter.sos(1, :) = notch_FOFB_4.sos;
   filter.g = filter.g*notch_FOFB_4.g;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  % Specific filters
+  % Specific biquads
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   filters = cell(ncorr, 1);
+
+  notch_FOFB_2 = calc_notch_biquad(0.9999999999, 8);
   for i = 1:ncorr
     filters{i} = filter;
 
     % We don't have fitted models for the excluded correctors
     if ~ismember(i, excluded_corr)
       cl_ps_bw = bandwidth(cl_ps_idtf{i})/(2*pi);
-      % Biquad 3: Pre-emphasis shelf filter
+
+      % Biquad 2: Notch filter @ FOFB/2 + Pre-emphasis shelf filter
+      % Since both the notch filter at FOFB/2 and the pre-emphasis shelf filter
+      % are first-order systems, they can be combined into a single biquad.
+
       pre_emph_shelf = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
-      filters{i}.sos(3, :) = pre_emph_shelf.sos;
-      filters{i}.g = filters{i}.g*pre_emph_shelf.g;
+      [b,a] = sos2tf([notch_FOFB_2.sos; pre_emph_shelf.sos], ...
+                     notch_FOFB_2.g*pre_emph_shelf.g);
+      sys = tf(b,a,1/fs);
+      sysr = minreal(sys);
+      assert(order(sysr) == 2);
+      assert(isstable(sysr));
+
+      % Convert to SOS
+      [biquad.sos, biquad.g] = tf2sos(sysr.Numerator{1},sysr.Denominator{1});
+
+      % Scale the numerator coefficients to better use FPGA's resolution
+      % NOTE: The denominator can't be changed because gateware assumes a0 = 1.
+      max_fpga_coeff = 2;
+      factor = max_fpga_coeff/max(abs(biquad.sos(1:3)));
+      biquad.sos(1:3) = factor*biquad.sos(1:3);
+      biquad.g = biquad.g/factor;
+
+      filters{i}.sos(2, :) = biquad.sos;
+      filters{i}.g = filter.g*biquad.g;
+    else
+      % Biquad 2: Notch filter @ FOFB/2
+      filters{i}.sos(2, :) = notch_FOFB_2.sos;
+      filters{i}.g = filters{i}.g*notch_FOFB_2.g;
     end
   end
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
