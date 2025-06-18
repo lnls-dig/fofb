@@ -7,8 +7,8 @@
 %   The arguments are:
 %   cl_ps_idtf_fpath: filepath to the power supplies' closed-loop fitted models
 %                     obtained by sysid/ps_cl_tfest
-%   ps_pi_fpga_gains_fpath: filepath to the power supplies' PI gains file
-%                           obtained by sysid/ps_pi_tune
+%   ps_pi_fpga_gains_fpath: filepath to the power supplies' PI gains obtained by
+%                           sysid/ps_pi_tune
 %   params_out_fn: output parameters filename
 
 % Copyright (C) 2024 CNPEM (cnpem.br)
