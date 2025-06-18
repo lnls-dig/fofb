@@ -37,14 +37,14 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
   % Common filters
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Biquad 1: Notch filter @ FOFB/4
-  biquad = calc_notch_biquad(0.5, 8);
-  filter.sos(1, :) = biquad.sos;
-  filter.g = filter.g*biquad.g;
+  notch_FOFB_2 = calc_notch_biquad(0.5, 8);
+  filter.sos(1, :) = notch_FOFB_2.sos;
+  filter.g = filter.g*notch_FOFB_2.g;
 
   % Biquad 2: Notch filter @ FOFB/2
-  biquad = calc_notch_biquad(0.9999999999, 8);
-  filter.sos(2, :) = biquad.sos;
-  filter.g = filter.g*biquad.g;
+  notch_FOFB_4 = calc_notch_biquad(0.9999999999, 8);
+  filter.sos(2, :) = notch_FOFB_4.sos;
+  filter.g = filter.g*notch_FOFB_4.g;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % Specific filters
@@ -57,9 +57,9 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
     if ~ismember(i, excluded_corr)
       cl_ps_bw = bandwidth(cl_ps_idtf{i})/(2*pi);
       % Biquad 3: Pre-emphasis shelf filter
-      biquad = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
-      filters{i}.sos(3, :) = biquad.sos;
-      filters{i}.g = filters{i}.g*biquad.g;
+      pre_emph_shelf = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
+      filters{i}.sos(3, :) = pre_emph_shelf.sos;
+      filters{i}.g = filters{i}.g*pre_emph_shelf.g;
     end
   end
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
