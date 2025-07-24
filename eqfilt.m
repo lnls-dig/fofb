@@ -5,7 +5,6 @@ function [F, AF, nf] = eqfilt(A, pz_left, pz_right, znmp_left, tgt_bw, max_bw, n
 % Make poles and zeros cancellations inside a region of interest and add
 % one missing non-minimum phase zeros close to -1.
 %
-%
 % [F, AF, nf] = eqfilt(A, pz_left, pz_right, znmp_left, tgt_bw, max_bw, n)
 %
 % INPUTS:
@@ -54,6 +53,8 @@ if nargin < 7 || isempty(n) || n < 0
 end
 
 % Detrmine maximum number of zeros and poles in transfer functions of A
+nz = 0;
+np = 0;
 Azpk = cell(size(A));
 for i=1:length(A)
     Azpk{i} = zpk(minreal(A{i}));
