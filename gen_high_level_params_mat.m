@@ -13,7 +13,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
 %   params_out_fn:          output parameters filename
 
   % Constants
-  fs = 48193;
+  Ts = A{1}.Ts;
   ncorr = length(A);
   nbiquads = 4;
   excluded_corr = [1, 80, 81, 160];
@@ -44,6 +44,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
   filters = cell(ncorr, 1);
 
   notch_FOFB_2 = calc_notch_biquad(0.9999999999, 8);
+  eq_zpk = eqfilt(A,-1,1,-20,1e4,inf,5);
   for i = 1:ncorr
     filters{i} = filter;
 
@@ -51,13 +52,14 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
     if ~ismember(i, excluded_corr)
       % Biquad 2-4: Notch filter @ FOFB/2 + Equalization filter
 
-      [eq_zpk,~,~] = eqfilt(A,-1,1,-20,inf,inf,5);
-      eq_sos = zpk2sos(eq_zpk.z{1},eq_zpk.p{1},eq_zpk.k);
+      [eq_i_sos.sos,eq_i_sos.g] = zp2sos(eq_zpk{i}.z{1},eq_zpk{i}.p{1},...
+                                         eq_zpk{i}.k);
 
       % Combine the notch filter at FOFB/2 (1st-order) and the equalization
       % filter (max 5th-order) into the three remaining biquads.
-      [b,a] = sos2tf([notch_FOFB_2.sos; eq_sos.sos], notch_FOFB_2.g*eq_sos.g);
-      sys = tf(b,a,1/fs);
+      [b,a] = sos2tf([notch_FOFB_2.sos; eq_i_sos.sos],...
+                     notch_FOFB_2.g*eq_i_sos.g);
+      sys = tf(b,a,Ts);
       sysr = minreal(sys);
       assert(order(sysr) <= 6);
       assert(isstable(sysr));
@@ -86,7 +88,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
   %for i = 1:ncorr
   %  if ~ismember(i, excluded_corr)
   %    [b, a] = sos2tf(filters{i}.sos, filters{i}.g);
-  %    sys = tf(b, a, 1/fs);
+  %    sys = tf(b, a, Ts);
 
   %    % DC gain should be 0 dB
   %    assert((dcgain(sys) - 1.0) < 0.001);
