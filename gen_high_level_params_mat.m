@@ -1,5 +1,4 @@
-function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
-                                   params_out_fn)
+function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
 % GEN_HIGH_LEVEL_PARAMS_MAT Generates the high-level parameters matrix file.
 %
 % A function for generating the high-level parameters matrix file following the
@@ -7,22 +6,23 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
 % High-Level FOFB GUI.
 %
 % INPUTS:
-%   cl_ps_idtf_fpath:       filepath to the power supplies' closed-loop fitted
-%                           models obtained by sysid/ps_cl_tfest
+%   A:                      Open loop transfer functions corrector by corrector
+%                           (cell array of dynamical system objects).
 %   ps_pi_fpga_gains_fpath: filepath to the power supplies' PI gains obtained by
 %                           sysid/ps_pi_tune
 %   params_out_fn:          output parameters filename
 
   % Constants
   fs = 48193;
-  ncorr = 160;
+  ncorr = length(A);
   nbiquads = 4;
   excluded_corr = [1, 80, 81, 160];
   actuator_bw = 10000;
 
+  max_fpga_coeff = 2;
+
   addpath('sysid');
 
-  cl_ps_idtf = load(cl_ps_idtf_fpath).cl_ps_idtf;
   ps_pi_fpga_gains = readmatrix(ps_pi_fpga_gains_fpath);
 
   pass_through_biquad.sos = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
@@ -49,32 +49,25 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
 
     % We don't have fitted models for the excluded correctors
     if ~ismember(i, excluded_corr)
-      cl_ps_bw = bandwidth(cl_ps_idtf{i})/(2*pi);
+      % Biquad 2-4: Notch filter @ FOFB/2 + Equalization filter
 
-      % Biquad 2: Notch filter @ FOFB/2 + Pre-emphasis shelf filter
-      % Since both the notch filter at FOFB/2 and the pre-emphasis shelf filter
-      % are first-order systems, they can be combined into a single biquad.
+      [eq_zpk,~,~] = eqfilt(A,-1,1,-20,inf,inf,5);
+      eq_sos = zpk2sos(eq_zpk.z{1},eq_zpk.p{1},eq_zpk.k);
 
-      pre_emph_shelf = calc_shelf_biquad(-cl_ps_bw, -actuator_bw, 1/fs);
-      [b,a] = sos2tf([notch_FOFB_2.sos; pre_emph_shelf.sos], ...
-                     notch_FOFB_2.g*pre_emph_shelf.g);
+      % Combine the notch filter at FOFB/2 (1st-order) and the equalization
+      % filter (max 5th-order) into the three remaining biquads.
+      [b,a] = sos2tf([notch_FOFB_2.sos; eq_sos.sos], notch_FOFB_2.g*eq_sos.g);
       sys = tf(b,a,1/fs);
       sysr = minreal(sys);
-      assert(order(sysr) == 2);
+      assert(order(sysr) <= 6);
       assert(isstable(sysr));
 
-      % Convert to SOS
-      [biquad.sos, biquad.g] = tf2sos(sysr.Numerator{1},sysr.Denominator{1});
+      % Convert back to SOS
+      [sos,g] = tf2sos(sysr.Numerator{1},sysr.Denominator{1});
+      [sos,g] = scale_coeffs_to_fpga(sos,g,max_fpga_coeff);
 
-      % Scale the numerator coefficients to better use FPGA's resolution
-      % NOTE: The denominator can't be changed because gateware assumes a0 = 1.
-      max_fpga_coeff = 2;
-      factor = max_fpga_coeff/max(abs(biquad.sos(1:3)));
-      biquad.sos(1:3) = factor*biquad.sos(1:3);
-      biquad.g = biquad.g/factor;
-
-      filters{i}.sos(2, :) = biquad.sos;
-      filters{i}.g = filter.g*biquad.g;
+      filters{i}.sos(2:4, :) = sos;
+      filters{i}.g = filters{i}.g*g;
     else
       % Biquad 2: Notch filter @ FOFB/2
       filters{i}.sos(2, :) = notch_FOFB_2.sos;
