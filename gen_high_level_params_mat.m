@@ -13,7 +13,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
 %   params_out_fn:          output parameters filename
 
   % Constants
-  fs = 48193;
+  Ts = A{1}.Ts;
   ncorr = length(A);
   nbiquads = 4;
   excluded_corr = [1, 80, 81, 160];
@@ -57,7 +57,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
       % Combine the notch filter at FOFB/2 (1st-order) and the equalization
       % filter (max 5th-order) into the three remaining biquads.
       [b,a] = sos2tf([notch_FOFB_2.sos; eq_sos.sos], notch_FOFB_2.g*eq_sos.g);
-      sys = tf(b,a,1/fs);
+      sys = tf(b,a,Ts);
       sysr = minreal(sys);
       assert(order(sysr) <= 6);
       assert(isstable(sysr));
@@ -86,7 +86,7 @@ function gen_high_level_params_mat(A, ps_pi_fpga_gains_fpath, params_out_fn)
   %for i = 1:ncorr
   %  if ~ismember(i, excluded_corr)
   %    [b, a] = sos2tf(filters{i}.sos, filters{i}.g);
-  %    sys = tf(b, a, 1/fs);
+  %    sys = tf(b, a, Ts);
 
   %    % DC gain should be 0 dB
   %    assert((dcgain(sys) - 1.0) < 0.001);
