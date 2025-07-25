@@ -2,16 +2,16 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
                                    params_out_fn)
 % GEN_HIGH_LEVEL_PARAMS_MAT Generates the high-level parameters matrix file.
 %
-%   A function for generating the high-level parameters matrix file following
-%   the High-Level FOFB IOC conventions. This file can be directly inputed into
-%   the High-Level FOFB GUI.
+% A function for generating the high-level parameters matrix file following the
+% High-Level FOFB IOC conventions. This file can be directly inputed into the
+% High-Level FOFB GUI.
 %
-%   The arguments are:
-%   cl_ps_idtf_fpath: filepath to the power supplies' closed-loop fitted models
-%                     obtained by sysid/ps_cl_tfest
+% INPUTS:
+%   cl_ps_idtf_fpath:       filepath to the power supplies' closed-loop fitted
+%                           models obtained by sysid/ps_cl_tfest
 %   ps_pi_fpga_gains_fpath: filepath to the power supplies' PI gains obtained by
 %                           sysid/ps_pi_tune
-%   params_out_fn: output parameters filename
+%   params_out_fn:          output parameters filename
 
   % Constants
   fs = 48193;
