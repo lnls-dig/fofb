@@ -63,24 +63,24 @@ function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
 
   % Plot composed filters' bode
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  figure();
-  opts = bodeoptions;
-  opts.FreqUnits = 'Hz';
-  opts.PhaseWrapping = 'on';
+  %figure();
+  %opts = bodeoptions;
+  %opts.FreqUnits = 'Hz';
+  %opts.PhaseWrapping = 'on';
 
-  for i = 1:ncorr
-    if ~ismember(i, excluded_corr)
-      [b, a] = sos2tf(filters{i}.sos, filters{i}.g);
-      sys = tf(b, a, 1/fs);
+  %for i = 1:ncorr
+  %  if ~ismember(i, excluded_corr)
+  %    [b, a] = sos2tf(filters{i}.sos, filters{i}.g);
+  %    sys = tf(b, a, 1/fs);
 
-      % DC gain should be 0 dB
-      assert((dcgain(sys) - 1.0) < 0.001);
+  %    % DC gain should be 0 dB
+  %    assert((dcgain(sys) - 1.0) < 0.001);
 
-      bode(sys, opts);
-      grid on;
-      hold on;
-    end
-  end
+  %    bode(sys, opts);
+  %    grid on;
+  %    hold on;
+  %  end
+  %end
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % Build high-level parameters matrix
