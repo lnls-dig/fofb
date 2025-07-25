@@ -1,3 +1,5 @@
+function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
+                                   params_out_fn)
 % GEN_HIGH_LEVEL_PARAMS_MAT Generates the high-level parameters matrix file.
 %
 %   A function for generating the high-level parameters matrix file following
@@ -11,11 +13,6 @@
 %                           sysid/ps_pi_tune
 %   params_out_fn: output parameters filename
 
-% Copyright (C) 2024 CNPEM (cnpem.br)
-% Author: Guilherme Ricioli <guilherme.ricioli@lnls.br>
-
-function gen_high_level_params_mat(cl_ps_idtf_fpath, ps_pi_fpga_gains_fpath, ...
-                                   params_out_fn)
   % Constants
   fs = 48193;
   ncorr = 160;
