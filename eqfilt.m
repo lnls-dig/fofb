@@ -3,25 +3,25 @@ function [F, AF, nf] = eqfilt(A, pz_left, pz_right, znmp_left, tgt_bw, max_bw, n
 % 
 % Find discrete-time equalization filters to achieve a target bandwidth.
 % Make poles and zeros cancellations inside a region of interest and add
-% one missing non-minimum phase zeros close to -1.
+% one missing non-minimum phase zero close to -1 if needed.
 %
 % [F, AF, nf] = eqfilt(A, pz_left, pz_right, znmp_left, tgt_bw, max_bw, n)
 %
 % INPUTS:
 %   A:         Open loop transfer functions corrector by corrector (cell
 %              array of dynamical system objects).
-%   pz_left:   Left edge of region of interest for pole-zero cancellations
-%              (default: -1).
-%   pz_right:  Right edge of region of interest for pole-zero cancellations
-%              (default: 1).
-%   znmp_left: Left edge of non-minimum phase zeros region of interest
-%              (default: -20).
+%   pz_left:   Left edge of region of interest in the pole-zero map for
+%              pole-zero cancellations (default: -1).
+%   pz_right:  Right edge of region of interest in the pole-zero map for
+%              pole-zero cancellations (default: 1).
+%   znmp_left: Left edge of non-minimum phase zeros region of interest in
+%              the pole-zero map (default: -20).
 %   tgt_bw:    Target banwdidth (dominant pole, -3 dB cutoff) [Hz]
 %              (default: inf).
 %   max_bw:    Banwdidth of poles which need to be added to make filters
-%              realizable after addition of zeros (default: inf)
-%   n:         Target filters order (resulting filter order is reduced with
-%              BALRED if needed).
+%              realizable after addition of zeros (default: inf).
+%   n:         Target filters order. The resulting filter order is reduced
+%              with BALRED when necessary.
 %
 % OUTPUTS:
 %   F:    Resulting equalization filters.
