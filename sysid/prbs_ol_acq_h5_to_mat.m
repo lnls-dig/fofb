@@ -48,8 +48,10 @@ for i=1:ncorr
         % Orbit output data
         orbx = h5read(fpath, '/data/orbx');
         orby = h5read(fpath, '/data/orby');
-        data.orb = [orbx(:, acq_nrpoints_before+1:end)
-                    orby(:, acq_nrpoints_before+1:end)];
+        data.not_excited_orb = [orbx(:, 1:acq_nrpoints_before)
+                                orby(:, 1:acq_nrpoints_before)];
+        data.excited_orb = [orbx(:, acq_nrpoints_before+1:end)
+                            orby(:, acq_nrpoints_before+1:end)];
 
         data.bpm_idx_max_response = ...
           ps_name_bpm_idx_max_response_table{[ps_name], 1} + 1;

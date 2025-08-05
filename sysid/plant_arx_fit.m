@@ -27,7 +27,7 @@ prbs_u = prbs_ol_acq.data.prbs_data;
 prbs_lfsr_len = prbs_ol_acq.data.prbs_lfsr_len(1);
 prbs_step_duration = prbs_ol_acq.data.prbs_step_duration(1);
 prbs_mov_avg_taps = double(prbs_ol_acq.data.prbs_mov_avg_taps);
-bpm_y = prbs_ol_acq.data.orb(prbs_ol_acq.data.bpm_idx_max_response, :);
+bpm_y = prbs_ol_acq.data.excited_orb(prbs_ol_acq.data.bpm_idx_max_response, :);
 
 % PRBS period length
 prbs_T = (2^(prbs_lfsr_len) - 1)*prbs_step_duration;
