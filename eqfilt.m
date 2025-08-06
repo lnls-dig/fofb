@@ -36,7 +36,7 @@ if nargin < 3 || isempty(pz_right) || pz_right < 0
     pz_right = 1;
 end
 
-if nargin < 4 || isempty(znmp_left) || znmp_left < 0
+if nargin < 4 || isempty(znmp_left) || znmp_left > -1
     znmp_left = -20;
 end
 
