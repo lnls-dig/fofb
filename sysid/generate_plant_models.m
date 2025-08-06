@@ -20,11 +20,12 @@ figure();
 for i=1:ncorr
     tic;
     ps_name = string(ps_names_table{i, 1});
+    ps_name_without_colon = replace(ps_name, ":", "-");
     fprintf('Corrector %d: %s\n', i, ps_name);
     if ismember(i, excluded_corr)
         sys{i} = NaN;
     else
-        fpath = strcat(prbs_ol_acq_fpath, ps_name, '.mat');
+        fpath = strcat(prbs_ol_acq_fpath, ps_name_without_colon, '.mat');
         sys{i} = plant_arx_fit(fpath, [6 6 2]);
         fit(i) = sys{i}.Report.Fit.FitPercent;
 

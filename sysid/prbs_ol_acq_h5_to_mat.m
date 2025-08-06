@@ -20,8 +20,9 @@ excluded_corr = [1, 80, 81, 160];
 for i=1:ncorr
     tic;
     ps_name = string(ps_names_table{i, 1});
+    ps_name_without_colon = replace(ps_name, ":", "-");
     fprintf('Corrector %d: %s\n', i, ps_name);
-    fpath = strcat(prbs_ol_acq_fpath, ps_name, '.h5');
+    fpath = strcat(prbs_ol_acq_fpath, ps_name_without_colon, '.h5');
     if ~ismember(i, excluded_corr)
         data.prbs_lfsr_len = h5read(fpath, '/data/prbs_lfsr_len');
         data.prbs_step_duration = h5read(fpath, '/data/prbs_step_duration');
@@ -56,7 +57,7 @@ for i=1:ncorr
         data.bpm_idx_max_response = ...
           ps_name_bpm_idx_max_response_table{[ps_name], 1} + 1;
 
-        save(ps_name, 'data');
+        save(ps_name_without_colon, 'data');
     end
     fprintf('Elapsed time: %f s\n', toc);
 end
