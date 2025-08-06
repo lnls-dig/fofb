@@ -28,16 +28,7 @@ prbs_lfsr_len = prbs_ol_acq.data.prbs_lfsr_len(1);
 prbs_step_duration = prbs_ol_acq.data.prbs_step_duration(1);
 prbs_mov_avg_taps = double(prbs_ol_acq.data.prbs_mov_avg_taps);
 
-if size(prbs_ol_acq.data.excited_orb, 1) == 160
-  bpm_idx_to_pick = prbs_ol_acq.data.bpm_idx_max_response;
-else % 2
-  if prbs_ol_acq.data.bpm_idx_max_response < 81
-    bpm_idx_to_pick = 1;
-  else
-    bpm_idx_to_pick = 2;
-  end
-end
-
+bpm_y = prbs_ol_acq.data.excited_orb;
 % PRBS period length
 prbs_T = (2^(prbs_lfsr_len) - 1)*prbs_step_duration;
 
@@ -46,12 +37,12 @@ n_prbs_T_transient = 4;
 assert(length(prbs_u) > prbs_T*n_prbs_T_transient, ...
        "Could not remove transient: dataset is too small");
 prbs_u = prbs_u(prbs_T*n_prbs_T_transient + 1:end);
-bpm_y = bpm_y(prbs_T*n_prbs_T_transient + 1:end);
+bpm_y = bpm_y(:, prbs_T*n_prbs_T_transient + 1:end);
 
 % Guarantees that there's an integer amount of PRBS periods in datasets
 rem = mod(length(prbs_u), prbs_T);
 prbs_u = prbs_u(1:end - rem);
-bpm_y = bpm_y(1:end - rem);
+bpm_y = bpm_y(:, 1:end - rem);
 
 % Reduces dataset (optional parameter)
 if exist('n_prbs_T_to_use', 'var')
@@ -59,7 +50,7 @@ if exist('n_prbs_T_to_use', 'var')
     assert(n_prbs_T_to_use <= n_p, ...
            "Could not reduce dataset: not enough PRBS periods");
     prbs_u = prbs_u(1:n_prbs_T_to_use*prbs_T);
-    bpm_y = bpm_y(1:n_prbs_T_to_use*prbs_T);
+    bpm_y = bpm_y(:, 1:n_prbs_T_to_use*prbs_T);
 end
 
 % Mimics the moving average filter that's applied to the PRBS excitation in
@@ -73,7 +64,10 @@ bpm_y_avg = mean(reshape(bpm_y, prbs_T, []), 2);
 
 % Removes the mean value
 prbs_u_avg = prbs_u_avg - mean(prbs_u_avg);
-bpm_y_avg = bpm_y_avg - mean(bpm_y_avg);
+bpm_y_avg = bpm_y_avg - mean(bpm_y_avg')';
+
+[~, bpm_idx_to_pick] = max(std(bpm_y_avg')');
+bpm_y_avg = bpm_y_avg(bpm_idx_to_pick, :)';
 
 % ARX fit
 plant_iddata = iddata(bpm_y_avg, prbs_u_avg, Ts);
