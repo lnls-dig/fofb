@@ -27,7 +27,16 @@ prbs_u = prbs_ol_acq.data.prbs_data;
 prbs_lfsr_len = prbs_ol_acq.data.prbs_lfsr_len(1);
 prbs_step_duration = prbs_ol_acq.data.prbs_step_duration(1);
 prbs_mov_avg_taps = double(prbs_ol_acq.data.prbs_mov_avg_taps);
-bpm_y = prbs_ol_acq.data.excited_orb(prbs_ol_acq.data.bpm_idx_max_response, :);
+
+if size(prbs_ol_acq.data.excited_orb, 1) == 160
+  bpm_idx_to_pick = prbs_ol_acq.data.bpm_idx_max_response;
+else % 2
+  if prbs_ol_acq.data.bpm_idx_max_response < 81
+    bpm_idx_to_pick = 1;
+  else
+    bpm_idx_to_pick = 2;
+  end
+end
 
 % PRBS period length
 prbs_T = (2^(prbs_lfsr_len) - 1)*prbs_step_duration;
