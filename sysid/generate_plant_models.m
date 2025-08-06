@@ -26,7 +26,7 @@ for i=1:ncorr
         sys{i} = NaN;
     else
         fpath = strcat(prbs_ol_acq_fpath, ps_name_without_colon, '.mat');
-        sys{i} = plant_arx_fit(fpath, [6 6 2]);
+        sys{i} = fit_plant_arx(fpath, [6 6 2]);
         fit(i) = sys{i}.Report.Fit.FitPercent;
 
         %opts = bodeoptions;

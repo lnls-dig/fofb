@@ -2,12 +2,12 @@
 % Author: Lucas Pelike <lucas.pelike@lnls.br>
 % Modified by: Guilherme Ricioli <guilherme.ricioli@lnls.br>
 
-function sys = plant_arx_fit(fpath, arx_params, n_prbs_T_to_use)
-% plant_arx_fit
+function sys = fit_plant_arx(fpath, arx_params, n_prbs_T_to_use)
+% fit_plant_arx
 %
 % Provides an ARX fit to the studied system with PRBS excitation
 %
-% sys = plant_arx_fit(fpath, arx_params, n_prbs_T_to_use)
+% sys = fit_plant_arx(fpath, arx_params, n_prbs_T_to_use)
 %
 % INPUTS:
 %   fpath:              Filepath to the plant PRBS acquistion MATLAB object
