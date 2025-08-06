@@ -52,7 +52,7 @@ if nargin < 7 || isempty(n) || n < 0
     n = 0;
 end
 
-% Detrmine maximum number of zeros and poles in transfer functions of A
+% Determine maximum number of zeros and poles in transfer functions of A
 nz = 0;
 np = 0;
 Azpk = cell(size(A));
@@ -72,7 +72,7 @@ end
 p = nan(length(A),np);          % Poles
 z = nan(length(A),nz);          % Zeros
 p_rem = nan(length(A),np);      % Poles to be canceled by adding zeros in the filter F
-z_rem = nan(length(A),nz);      % Zeros to be canceled by adding zeros in the filter F
+z_rem = nan(length(A),nz);      % Zeros to be canceled by adding poles in the filter F
 nmp_z_add = nan(length(A),nz);  % Non-minimum phase zeros to be added
 
 % Extract all poles and zeros of the actuator responses A to be equalized
